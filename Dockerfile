@@ -34,7 +34,5 @@ WORKDIR /app
 RUN go mod init proyecto
 RUN go mod tidy
 
-# Añadido linea de prueba para ver si se ejecuta el test
-
 # Run the tests
 CMD ["go", "test", "./tests/..."]

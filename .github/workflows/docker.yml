@@ -24,4 +24,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: danieeeld2/logisticsroutes:latest
+          tags: danieeeld2/r-vasca-testing:latest
