@@ -29,7 +29,7 @@ ENV PATH=$PATH:/go/bin
 # Copy dependencies into the container (no needed by the moment)
 
 # Install Go dependencies (if any)
-RUN go mod init proyecto
+RUN go mod init tests
 RUN go mod tidy
 
 # Run the tests
