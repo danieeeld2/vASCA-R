@@ -1,0 +1,18 @@
+name: Docker Test
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repo-code
+      uses: actions/checkout@v4
+
+    - name: Pull Docker image
+      run: docker pull danieeeld2/r-vasca-testing:latest
+
+    - name: Run Docker container
+      run: docker run --rm  -v "$(pwd):/app" danieeeld2/r-vasca-testing:latest
