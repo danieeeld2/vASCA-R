@@ -26,9 +26,7 @@ RUN apk add --no-cache go
 ENV GOPATH=/go
 ENV PATH=$PATH:/go/bin
 
-# Copy the project into the container
-COPY . /app
-WORKDIR /app
+# Copy dependencies into the container (no needed by the moment)
 
 # Install Go dependencies (if any)
 RUN go mod init proyecto
