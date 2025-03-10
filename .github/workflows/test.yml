@@ -15,4 +15,9 @@ jobs:
       run: docker pull danieeeld2/r-vasca-testing:latest
 
     - name: Run Docker container
-      run: docker run --rm  -v "$(pwd):/app" danieeeld2/r-vasca-testing:latest
+      run: |
+          docker run --rm \
+            -v "$(pwd):/app" \  
+            -w /app \           
+            danieeeld2/r-vasca-testing:latest \
+            go test ./tests/...  
