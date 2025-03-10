@@ -17,7 +17,7 @@ jobs:
     - name: Run Docker container
       run: |
           docker run --rm \
-            -v "$(pwd):/app" \  
-            -w /app \           
+            -v "$(pwd):/app" \
+            -w /app \
             danieeeld2/r-vasca-testing:latest \
-            go test ./tests/...  
+            go test ./tests/... 
