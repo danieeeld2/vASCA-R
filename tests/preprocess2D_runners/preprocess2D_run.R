@@ -12,6 +12,6 @@ X <- as.matrix(read.csv(dataset, header=FALSE))
 result <- preprocess2D(X)
 
 # Save the results to CSV files
-write.csv(result$xcs, "preprocess2D_r.csv", row.names=FALSE)
-write.csv(result$average, "average_r.csv", row.names=FALSE)
-write.csv(result$scale, "scale_r.csv", row.names=FALSE)
+write.table(result$xcs, "preprocess2D_r.csv", row.names=FALSE, col.names=FALSE, sep=",")
+write.table(t(result$average), "average_r.csv", row.names=FALSE, col.names=FALSE, sep=",")
+write.table(t(result$scale), "scale_r.csv", row.names=FALSE, col.names=FALSE, sep=",")
