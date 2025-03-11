@@ -2,18 +2,18 @@ package tests
 
 import (
 	"bytes"
+	"encoding/csv"
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
-	"testing"
-	"math"
-	"encoding/csv"
 	"strconv"
+	"testing"
 )
 
-// Function to run Octave command and capture the output
-func runOctave(command string) (string, error) {
-	cmd := exec.Command("octave", "--silent", "--no-gui", "-q", command)
+// Function to run Octave script and capture the output
+func runOctave(script string, dataset string) (string, error) {
+	cmd := exec.Command("octave", "--silent", "--no-gui", "-q", script, dataset)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
@@ -21,9 +21,9 @@ func runOctave(command string) (string, error) {
 	return out.String(), err
 }
 
-// Function to run R command and capture the output
-func runR(command string) (string, error) {
-	cmd := exec.Command("Rscript", command)
+// Function to run R script and capture the output
+func runR(script string, dataset string) (string, error) {
+	cmd := exec.Command("Rscript", script, dataset)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
@@ -116,13 +116,13 @@ func TestProcessData(t *testing.T) {
 	for _, dataset := range datasets {
 		t.Run(fmt.Sprintf("Testing with %s", dataset), func(t *testing.T) {
 			// Generating the processed datasets using Octave
-			_, err := runOctave("./preprocess2D_runners/preprocess2D_run.m " + dataset)
+			_, err := runOctave("./preprocess2D_runners/preprocess2D_run.m", dataset)
 			if err != nil {
 				t.Errorf("Failed to execute Octave script for %s: %v", dataset, err)
 			}
 
 			// Generating the processed datasets using R
-			_, err = runR("./preprocess2D_runners/preprocess2D_run.R " + dataset)
+			_, err = runR("./preprocess2D_runners/preprocess2D_run.R", dataset)
 			if err != nil {
 				t.Errorf("Failed to execute R script for %s: %v", dataset, err)
 			}
