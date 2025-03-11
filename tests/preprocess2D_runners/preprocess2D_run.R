@@ -3,7 +3,7 @@ args <- commandArgs(trailingOnly=TRUE)
 dataset <- args[1]  
 
 # Load the preprocess2D function
-source("../../R/preprocess2D.R")   
+source("../R/preprocess2D.R")   
 
 # Read data from the CSV file
 X <- as.matrix(read.csv(dataset, header=FALSE)) 
