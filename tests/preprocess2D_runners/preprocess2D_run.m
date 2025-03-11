@@ -1,4 +1,7 @@
 function run_preprocess2D(dataset)
+    % Add path to preprocess2D.m script
+    
+    aaddpath('../../matlab');
     % Read dataset from CSV file
     X = csvread(dataset);
 
