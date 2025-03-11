@@ -17,7 +17,7 @@ func runOctave(script, dataset, preprocessing, weights string) (string, error) {
 	if weights == "" {
 		cmd = exec.Command("octave", "--silent", "--no-gui", "-q", script, dataset, preprocessing)
 	} else {
-		cmd = exec.Command("octave", "--silent", "--no-gui", "-q", "-r", fmt.Sprintf("run_preprocess2D('%s', '%s', '%s')", dataset, preprocessing, weights))
+		cmd = exec.Command("octave", "--silent", "--no-gui", "-q", script, dataset, preprocessing, weights)
 		// print the command
 		fmt.Println(cmd)
 	}
@@ -180,52 +180,52 @@ func TestProcessData(t *testing.T) {
 				cleanupFiles()
 			}
 
-			// // Generate new weights in string format
-			// data, _ := readCSV(dataset)
-			// weights_octave, weights_r := "", ""
-			// for i := range data[0] {
-			// 	weights_octave += fmt.Sprintf("%f", 1.0/float64(len(data[0])))
-			// 	weights_r += fmt.Sprintf("%f", 1.0/float64(len(data[0])))
-			// 	if i < len(data[0])-1 {
-			// 		// R weights are comma separated
-			// 		weights_r += ","
-			// 		// Octave weights are space separated
-			// 		weights_octave += " "
-			// 	}
-			// }
+			// Generate new weights in string format
+			data, _ := readCSV(dataset)
+			weights_octave, weights_r := "", ""
+			for i := range data[0] {
+				weights_octave += fmt.Sprintf("%f", 1.0/float64(len(data[0])))
+				weights_r += fmt.Sprintf("%f", 1.0/float64(len(data[0])))
+				if i < len(data[0])-1 {
+					// R weights are comma separated
+					weights_r += ","
+					// Octave weights are space separated
+					weights_octave += " "
+				}
+			}
 
-			// // Testing with weights
-			// // Generating the processed datasets using Octave
-			// _, err := runOctave("./preprocess2D_runners/preprocess2D_run.m", dataset, "2", fmt.Sprintf("[%s]", weights_octave))
-			// if err != nil {
-			// 	t.Errorf("Failed to execute Octave script for %s: %v", dataset, err)
-			// }
+			// Testing with weights
+			// Generating the processed datasets using Octave
+			_, err := runOctave("./preprocess2D_runners/preprocess2D_run.m", dataset, "2", fmt.Sprintf("[%s]", weights_octave))
+			if err != nil {
+				t.Errorf("Failed to execute Octave script for %s: %v", dataset, err)
+			}
 
-			// // Generating the processed datasets using R
-			// _, err = runR("./preprocess2D_runners/preprocess2D_run.R", dataset, "2", weights_r)
-			// if err != nil {
-			// 	t.Errorf("Failed to execute R script for %s: %v", dataset, err)
-			// }
+			// Generating the processed datasets using R
+			_, err = runR("./preprocess2D_runners/preprocess2D_run.R", dataset, "2", weights_r)
+			if err != nil {
+				t.Errorf("Failed to execute R script for %s: %v", dataset, err)
+			}
 
-			// // Check that the processed files exist
-			// if !fileExists("preprocess2D_matlab.csv") || !fileExists("average_matlab.csv") || !fileExists("scale_matlab.csv") {
-			// 	t.Errorf("Octave processed files not found for %s", dataset)
-			// }
-			// if !fileExists("preprocess2D_r.csv") || !fileExists("average_r.csv") || !fileExists("scale_r.csv") {
-			// 	t.Errorf("R processed files not found for %s", dataset)
-			// }
+			// Check that the processed files exist
+			if !fileExists("preprocess2D_matlab.csv") || !fileExists("average_matlab.csv") || !fileExists("scale_matlab.csv") {
+				t.Errorf("Octave processed files not found for %s", dataset)
+			}
+			if !fileExists("preprocess2D_r.csv") || !fileExists("average_r.csv") || !fileExists("scale_r.csv") {
+				t.Errorf("R processed files not found for %s", dataset)
+			}
 
 			// // Compare the three outputs with the specified tolerance
-			// tolerance := 1e-6
-			// if !compareResults("preprocess2D_matlab.csv", "preprocess2D_r.csv", tolerance) {
-			// 	t.Errorf("The 'xcs' data from Octave and R are different for %s", dataset)
-			// }
-			// if !compareResults("average_matlab.csv", "average_r.csv", tolerance) {
-			// 	t.Errorf("The 'average' data from Octave and R are different for %s", dataset)
-			// }
-			// if !compareResults("scale_matlab.csv", "scale_r.csv", tolerance) {
-			// 	t.Errorf("The 'scale' data from Octave and R are different for %s", dataset)
-			// }
+			tolerance := 1e-6
+			if !compareResults("preprocess2D_matlab.csv", "preprocess2D_r.csv", tolerance) {
+				t.Errorf("The 'xcs' data from Octave and R are different for %s", dataset)
+			}
+			if !compareResults("average_matlab.csv", "average_r.csv", tolerance) {
+				t.Errorf("The 'average' data from Octave and R are different for %s", dataset)
+			}
+			if !compareResults("scale_matlab.csv", "scale_r.csv", tolerance) {
+				t.Errorf("The 'scale' data from Octave and R are different for %s", dataset)
+			}
 		})
 	}
 
