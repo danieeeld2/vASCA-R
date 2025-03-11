@@ -1,4 +1,4 @@
-function run_preprocess2D()
+function run_preprocess2D(varargin)
     % This script processes a dataset using the preprocess2D function.
     %
     % It takes command-line arguments to specify the dataset and optional parameters:
@@ -34,7 +34,7 @@ function run_preprocess2D()
 
     % Check that it is a CSV file
     if ~strcmp(dataset(end-3:end), '.csv')
-        error('Dataset must be a CSV file');
+        error('Dataset must be a CSV file. Got: %s', dataset);
     end
 
     % Add path to preprocess2D.m script
