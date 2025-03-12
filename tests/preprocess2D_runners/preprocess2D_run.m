@@ -21,6 +21,10 @@ function run_preprocess2D(varargin)
     %   matlab -nodisplay -r "run_preprocess2D('dataset.csv', '1')"  % Preprocessing = 1
     %   matlab -nodisplay -r "run_preprocess2D('dataset.csv', '[0.5 1.5 1.0 0.8]')"  % Custom weights
     %   matlab -nodisplay -r "run_preprocess2D('dataset.csv', '1', '[0.5 1.5 1.0 0.8]')"  % Both params
+    %   octave --no-gui -q run_preprocess2D.m dataset.csv  % Default settings
+    %   octave --no-gui -q run_preprocess2D.m dataset.csv 1  % Preprocessing = 1
+    %   octave --no-gui -q run_preprocess2D.m dataset.csv '[0.5 1.5 1.0 0.8]'  % Custom weights
+    %   octave --no-gui -q run_preprocess2D.m dataset.csv 1 '[0.5 1.5 1.0 0.8]'  % Both params
 
     % Get arguments
     args = argv();

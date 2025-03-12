@@ -215,7 +215,7 @@ func TestProcessData(t *testing.T) {
 				t.Errorf("R processed files not found for %s", dataset)
 			}
 
-			// // Compare the three outputs with the specified tolerance
+			// Compare the three outputs with the specified tolerance
 			tolerance := 1e-6
 			if !compareResults("preprocess2D_matlab.csv", "preprocess2D_r.csv", tolerance) {
 				t.Errorf("The 'xcs' data from Octave and R are different for %s", dataset)
