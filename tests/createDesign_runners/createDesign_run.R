@@ -42,7 +42,7 @@ createDesign_run <- function(...) {
     source("../R/createDesign.R")
     
     # Call createDesign function
-    F <- createDesign(levels, Replicates = reps)
+    F <- createDesign(levels, replicates = reps)
     
     # Save result to CSV file
     write.table(F, "design_matrix_r.csv", row.names = FALSE, col.names = FALSE, sep = ",", quote = FALSE) # Ignore row and column names
