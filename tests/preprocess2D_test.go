@@ -18,8 +18,6 @@ func runOctave(script, dataset, preprocessing, weights string) (string, error) {
 		cmd = exec.Command("octave", "--silent", "--no-gui", "-q", script, dataset, preprocessing)
 	} else {
 		cmd = exec.Command("octave", "--silent", "--no-gui", "-q", script, dataset, preprocessing, weights)
-		// print the command
-		fmt.Println(cmd)
 	}
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -35,8 +33,6 @@ func runR(script, dataset, preprocessing, weights string) (string, error) {
 		cmd = exec.Command("Rscript", script, dataset, preprocessing)
 	} else {
 		cmd = exec.Command("Rscript", script, dataset, preprocessing, weights)
-		// print the command
-		fmt.Println(cmd)
 	}
 	var out bytes.Buffer
 	cmd.Stdout = &out
