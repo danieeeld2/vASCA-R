@@ -20,13 +20,13 @@ function parglmVS_run(varargin)
     %
     % Example usage in MATLAB:
     %   matlab -nodisplay -r "parglmVS_run('rand(40, 100)', '(randn(40, 1) > 0) + 1')"
-    %   matlab -nodisplay -r "parglmVS_run('rand(40, 100)', '(randn(40, 1) > 0) + 1', 'Model', 'interaction', 'Nested', [1, 2])"
-    %   matlab -nodisplay -r "parglmVS_run('rand(40, 100)', '(randn(40, 1) > 0) + 1', 'Model', 'interaction', 'Preprocessing', 2, 'Permutations', 1000, 'Ts', 1, 'Ordinal', '[0, 1]', 'Fmtc', 3, 'Coding', '[0, 1]', 'Nested', '[1, 2]')"
+    %   matlab -nodisplay -r "parglmVS_run('rand(40, 100)', '(randn(40, 1) > 0) + 1', 'Model', 'interaction', 'Nested', [1 2])"
+    %   matlab -nodisplay -r "parglmVS_run('rand(40, 100)', '(randn(40, 1) > 0) + 1', 'Model', 'interaction', 'Preprocessing', '2', 'Permutations', '1000', 'Ts', 1, 'Ordinal', '0', 'Fmtc', 3, 'Coding', '1', 'Nested', '[1 2]')"
     %
     % Example usage in Octave:
     %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1"
-    %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1" "Model" "interaction" "Nested" "[1, 2]"
-    %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1" "Model" "interaction" "Preprocessing" "2" "Permutations" "1000" "Ts" "1" "Ordinal" "[0, 1]" "Fmtc" "3" "Coding" "[0, 1]" "Nested" "[1, 2]"
+    %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1" "Model" "interaction" "Nested" "[1 2]"
+    %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1" "Model" "interaction" "Preprocessing" "2" "Permutations" "1000" "Ts" "1" "Ordinal" "0" "Fmtc" "3" "Coding" "1" "Nested" "[1 2]"
     %
     % Outputs:
     %   - Saves the results as 'parglmVS_matlab.csv'
@@ -61,6 +61,31 @@ function parglmVS_run(varargin)
     if numel(args) > 2
         % Remaining arguments are name-value pairs
         optionalArgs = args(3:end);
+    end
+
+    % Convert numeric parameters to numbers
+    numericParams = {"Preprocessing", "Permutations", "Ts", "Fmtc", "Coding"};
+    
+    for i = 1:2:numel(optionalArgs)-1
+        paramName = optionalArgs{i};
+        paramValue = optionalArgs{i+1};
+        
+        if ismember(paramName, numericParams)
+            % Convert to numeric value
+            optionalArgs{i+1} = str2num(paramValue); 
+        end
+    end
+
+    % Handling the 'Nested' parameter correctly
+    nestedIdx = find(strcmp(optionalArgs, 'Nested'));
+    if ~isempty(nestedIdx)
+        % The 'Nested' parameter exists, convert the string to matrix
+        Nested = eval(optionalArgs{nestedIdx + 1});
+        % Replace 'Nested' parameter with the actual matrix in optionalArgs
+        optionalArgs = optionalArgs([1:nestedIdx-1, nestedIdx+2:end]);
+        optionalArgs = [optionalArgs, {'Nested', Nested}];
+    else
+        Nested = [];
     end
     
     % Add path to parglmVS.m script
