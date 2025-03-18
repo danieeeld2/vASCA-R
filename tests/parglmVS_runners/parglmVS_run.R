@@ -1,0 +1,99 @@
+parglmVS_run <- function(...) {
+  # This script runs the parglmVS function and saves the results to a CSV file.
+  #
+  # It takes command-line arguments to specify the input data and optional parameters:
+  #
+  # Usage: parglmVS_run <X> <F> [Name-Value Pairs]
+  #   - X: Data matrix (should be provided as an R matrix or data frame).
+  #   - F: Design matrix (should be provided as an R matrix or data frame).
+  #
+  # Optional Parameters:
+  #   - Model: Model type ('linear', 'interaction', 'full', or custom interactions).
+  #   - Preprocessing: Preprocessing type (0: none, 1: mean-centering, 2: auto-scaling).
+  #   - Permutations: Number of permutations (default: 1000).
+  #   - Ts: Test statistic (0: SSQ, 1: F-value, 2: F-ratio with hierarchy).
+  #   - Ordinal: Whether factors are ordinal (default: rep(0, ncol(F))).
+  #   - Fmtc: Multiple test correction (0: none, 1: Bonferroni, 2: Holm, 3: Benjamini-Hochberg, 4: Q-value).
+  #   - Coding: Coding type (0: sum/deviation, 1: reference).
+  #   - Nested: Nested factors (default: NULL).
+  #
+  # Example usage in R:
+  #   Rscript parglmVS_run.R 'matrix(runif(4000), nrow=40, ncol=100)' 'matrix(rnorm(40), nrow=40, ncol=1)'
+  #   Rscript parglmVS_runners/parglmVS_run.R 'matrix(runif(4000), nrow=40, ncol=100)' 'matrix(rnorm(40), nrow=40, ncol=1)'   Model "interaction"   Preprocessing 1   Permutations 500   Ts 2   Fmtc 3
+  #
+  # Outputs:
+  #   - Saves the results as 'parglmVS_r.csv'
+
+  # Parse command-line arguments
+  args <- commandArgs(trailingOnly = TRUE)
+
+  if (length(args) < 2) {
+    stop(paste("Not enough arguments. Usage: parglmVS_run <X> <F> [Name-Value Pairs]\n\n",
+               "Optional Parameters:\n",
+               "- Model: Model type ('linear', 'interaction', 'full', or custom interactions).\n",
+               "- Preprocessing: Preprocessing type (0: none, 1: mean-centering, 2: auto-scaling).\n",
+               "- Permutations: Number of permutations (default: 1000).\n",
+               "- Ts: Test statistic (0: SSQ, 1: F-value, 2: F-ratio with hierarchy).\n",
+               "- Ordinal: Whether factors are ordinal (default: rep(0, ncol(F))).\n",
+               "- Fmtc: Multiple test correction (0: none, 1: Bonferroni, 2: Holm, 3: Benjamini-Hochberg, 4: Q-value).\n",
+               "- Coding: Coding type (0: sum/deviation, 1: reference).\n",
+               "- Nested: Nested factors (default: NULL)."))
+  }
+
+  # Parse X and F (convert the strings to R objects)
+  X <- eval(parse(text = args[1]))
+  F <- eval(parse(text = args[2]))
+
+  # Set default values for optional arguments
+  optionalArgs <- list(
+    model = "linear",
+    preprocessing = 2,
+    permutations = 1000,
+    Ts = 1,
+    ordinal = rep(0, ncol(F)),
+    Fmtc = 0,
+    coding = 0,
+    nested = NULL
+  )
+
+  # Parse optional name-value pairs
+  if (length(args) > 2) {
+    for (i in seq(3, length(args), by = 2)) {
+      key <- tolower(args[i])  # Convert key to lowercase
+      value <- args[i + 1]
+
+      # Handle keys explicitly that need to preserve case
+      if (key == "preprocessing" || key == "permutations" || key == "model" || key == "coding" || key == "nested") {
+        if (key == "preprocessing" || key == "permutations") {
+          value <- as.integer(value)
+        } else if (key == "model") {
+          value <- as.character(value)
+        }
+        optionalArgs[[key]] <- value
+      } else if (key == "ts") {  # Handle Ts explicitly
+        optionalArgs[["Ts"]] <- as.integer(value)
+      } else if (key == "fmtc") {  # Handle Fmtc explicitly
+        optionalArgs[["Fmtc"]] <- as.integer(value)
+      }
+    }
+  }
+
+  # Load the parglmVS function
+  source("../R/parglmVS.R")
+
+  # Load the required packages
+  source("../R/createDesign.R")
+  source("../R/preprocess2D.R")
+
+  # Call parglmVS function with optional arguments
+  result <- parglmVS(X, F, model = optionalArgs$model, preprocessing = optionalArgs$preprocessing,
+                     permutations = optionalArgs$permutations, Ts = optionalArgs$Ts,
+                     ordinal = optionalArgs$ordinal, Fmtc = optionalArgs$Fmtc,
+                     coding = optionalArgs$coding, nested = optionalArgs$nested)
+
+  # Save results to CSV file
+  write.csv(result$T, file = "parglmVS_r.csv", row.names = FALSE)
+}
+
+# Run the parglmVS_run function
+parglmVS_run()
