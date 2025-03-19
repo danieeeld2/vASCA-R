@@ -79,11 +79,20 @@ function parglmVS_run(varargin)
     % Handling the 'Nested' parameter correctly
     nestedIdx = find(strcmp(optionalArgs, 'Nested'));
     if ~isempty(nestedIdx)
-        % The 'Nested' parameter exists, convert the string to matrix
-        Nested = eval(optionalArgs{nestedIdx + 1});
+        % Take the next argument as the 'Nested' matrix
+        Nested = optionalArgs{nestedIdx + 1}; 
+        
+        % Convert the string to a matrix
+        Nested = eval(Nested);
+        fprintf('Nested: %s\n', mat2str(Nested));
+        
+        % Ensure that Nested is a matrix with 2 columns (nx2)
+        if size(Nested, 2) ~= 2
+            error('The "Nested" parameter must be a matrix with two columns.');
+        end
+        
         % Replace 'Nested' parameter with the actual matrix in optionalArgs
-        optionalArgs = optionalArgs([1:nestedIdx-1, nestedIdx+2:end]);
-        optionalArgs = [optionalArgs, {'Nested', Nested}];
+        optionalArgs{nestedIdx + 1} = Nested;
     else
         Nested = [];
     end
