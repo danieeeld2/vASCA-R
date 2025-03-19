@@ -68,13 +68,15 @@ parglmVS_run <- function(...) {
           value <- as.integer(value)
         } else if (key == "model") {
           value <- as.character(value)
+        } else if (key == "nested") {
+          value <- eval(parse(text = value))  # Convert string to matrix
         }
         optionalArgs[[key]] <- value
       } else if (key == "ts") {  # Handle Ts explicitly
         optionalArgs[["Ts"]] <- as.integer(value)
       } else if (key == "fmtc") {  # Handle Fmtc explicitly
         optionalArgs[["Fmtc"]] <- as.integer(value)
-      }
+      } 
     }
   }
 
@@ -87,8 +89,8 @@ parglmVS_run <- function(...) {
 
   # Call parglmVS function with optional arguments
   result <- parglmVS(X, F, model = optionalArgs$model, preprocessing = optionalArgs$preprocessing,
-                     permutations = optionalArgs$permutations, Ts = optionalArgs$Ts,
-                     ordinal = optionalArgs$ordinal, Fmtc = optionalArgs$Fmtc,
+                     permutations = optionalArgs$permutations, ts = optionalArgs$Ts,
+                     ordinal = optionalArgs$ordinal, fmtc = optionalArgs$Fmtc,
                      coding = optionalArgs$coding, nested = optionalArgs$nested)
 
   # Save results to CSV file
