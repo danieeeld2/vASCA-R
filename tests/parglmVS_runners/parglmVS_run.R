@@ -63,8 +63,8 @@ parglmVS_run <- function(...) {
       value <- args[i + 1]
 
       # Handle keys explicitly that need to preserve case
-      if (key == "preprocessing" || key == "permutations" || key == "model" || key == "coding" || key == "nested") {
-        if (key == "preprocessing" || key == "permutations") {
+      if (key == "preprocessing" || key == "permutations" || key == "model" || key == "coding" || key == "nested" || key == "ordinal") {
+        if (key == "preprocessing" || key == "permutations" || key == "ordinal") {
           value <- as.integer(value)
         } else if (key == "model") {
           value <- as.character(value)

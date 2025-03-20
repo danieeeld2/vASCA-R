@@ -64,7 +64,7 @@ function parglmVS_run(varargin)
     end
 
     % Convert numeric parameters to numbers
-    numericParams = {"Preprocessing", "Permutations", "Ts", "Fmtc", "Coding"};
+    numericParams = {"Preprocessing", "Permutations", "Ts", "Fmtc", "Coding", "Ordinal"};
     
     for i = 1:2:numel(optionalArgs)-1
         paramName = optionalArgs{i};
