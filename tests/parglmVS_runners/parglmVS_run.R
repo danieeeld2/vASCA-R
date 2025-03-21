@@ -4,8 +4,8 @@ parglmVS_run <- function(...) {
   # It takes command-line arguments to specify the input data and optional parameters:
   #
   # Usage: parglmVS_run <X> <F> [Name-Value Pairs]
-  #   - X: Data matrix (should be provided as an R matrix or data frame).
-  #   - F: Design matrix (should be provided as an R matrix or data frame).
+  #   - X: Path to the data matrix CSV file OR R expression to generate the data matrix.
+  #   - F: Path to the design matrix CSV file OR R expression to generate the design matrix.
   #
   # Optional Parameters:
   #   - Model: Model type ('linear', 'interaction', 'full', or custom interactions).
@@ -20,6 +20,8 @@ parglmVS_run <- function(...) {
   # Example usage in R:
   #   Rscript parglmVS_run.R 'matrix(runif(4000), nrow=40, ncol=100)' 'matrix(rnorm(40), nrow=40, ncol=1)'
   #   Rscript parglmVS_runners/parglmVS_run.R 'matrix(runif(4000), nrow=40, ncol=100)' 'matrix(rnorm(40), nrow=40, ncol=1)'   Model "interaction"   Preprocessing 1   Permutations 500   Ts 2   Fmtc 3
+  #
+  # You can also replace 'matrix(runif(4000), nrow=40, ncol=100)' and 'matrix(rnorm(40), nrow=40, ncol=1)' with the paths to CSV files.
   #
   # Outputs:
   #   - Saves the results as 'parglmVS_r.csv'
@@ -40,9 +42,46 @@ parglmVS_run <- function(...) {
                "- Nested: Nested factors (default: NULL)."))
   }
 
-  # Parse X and F (convert the strings to R objects)
-  X <- eval(parse(text = args[1]))
-  F <- eval(parse(text = args[2]))
+  # Function to check if a string looks like a file path
+  is_file_path <- function(x) {
+    grepl("\\.csv$", x) || grepl("/", x) || grepl("\\\\", x)
+  }
+
+  # Parse X
+  argX <- args[1]
+  if (is_file_path(argX)) {
+    tryCatch({
+      X <- as.matrix(read.csv(argX, header = FALSE))
+      cat(paste("Loaded X from:", argX, "\n"))
+    }, error = function(e) {
+      stop(paste("Error loading X from CSV file:", e$message))
+    })
+  } else {
+    tryCatch({
+      X <- eval(parse(text = argX))
+      cat(paste("Evaluated X:", argX, "\n"))
+    }, error = function(e) {
+      stop(paste("Error evaluating X:", e$message))
+    })
+  }
+
+  # Parse F
+  argF <- args[2]
+  if (is_file_path(argF)) {
+    tryCatch({
+      F <- as.matrix(read.csv(argF, header = FALSE))
+      cat(paste("Loaded F from:", argF, "\n"))
+    }, error = function(e) {
+      stop(paste("Error loading F from CSV file:", e$message))
+    })
+  } else {
+    tryCatch({
+      F <- eval(parse(text = argF))
+      cat(paste("Evaluated F:", argF, "\n"))
+    }, error = function(e) {
+      stop(paste("Error evaluating F:", e$message))
+    })
+  }
 
   # Set default values for optional arguments
   optionalArgs <- list(

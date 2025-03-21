@@ -4,8 +4,8 @@ function parglmVS_run(varargin)
     % It takes command-line arguments to specify the input data and optional parameters:
     %
     % Usage: parglmVS_run <X> <F> [Name-Value Pairs]
-    %   - <X>: String representation of the data matrix X.
-    %   - <F>: String representation of the design matrix F.
+    %   - <X>: String representation of the data matrix X OR path to a CSV file.
+    %   - <F>: String representation of the design matrix F OR path to a CSV file.
     %   - [Name-Value Pairs]: Optional parameters for parglmVS, e.g., 'Model', 'interaction', 'Nested', [1, 2], etc.
     %
     % Optional Parameters:
@@ -27,6 +27,8 @@ function parglmVS_run(varargin)
     %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1"
     %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1" "Model" "interaction" "Nested" "[1 2]"
     %   octave --no-gui -q parglmVS_run.m "rand(40, 100)" "(randn(40, 1) > 0) + 1" "Model" "interaction" "Preprocessing" "2" "Permutations" "1000" "Ts" "1" "Ordinal" "0" "Fmtc" "3" "Coding" "1" "Nested" "[1 2]"
+    %
+    % You can also replace "parglmVS_run('rand(40, 100)', '(randn(40, 1) > 0) + 1')" with csv files from the data folder.
     %
     % Outputs:
     %   - Saves the results as 'parglmVS_matlab.csv'
@@ -52,9 +54,45 @@ function parglmVS_run(varargin)
                '- Nested: Nested factors (default: []).']);
     end
     
-    % Parse X and F (convert string to matrix)
-    X = eval(args{1});
-    F = eval(args{2});
+    % Parse X
+    argX = args{1};
+    if exist(argX, 'file') == 2
+        % It's a file, try to load it as a CSV
+        try
+            X = dlmread(argX, ',');
+            fprintf('Loaded X from: %s\n', argX);
+        catch ME
+            error('Error loading X from CSV file: %s', ME.message);
+        end
+    else
+        % It's likely a string representation of a matrix
+        try
+            X = eval(argX);
+            fprintf('Evaluated X: %s\n', argX);
+        catch ME
+            error('Error evaluating X: %s\n', ME.message);
+        end
+    end
+
+    % Parse F
+    argF = args{2};
+    if exist(argF, 'file') == 2
+        % It's a file, try to load it as a CSV
+        try
+            F = dlmread(argF, ',');
+            fprintf('Loaded F from: %s\n', argF);
+        catch ME
+            error('Error loading F from CSV file: %s', ME.message);
+        end
+    else
+        % It's likely a string representation of a matrix
+        try
+            F = eval(argF);
+            fprintf('Evaluated F: %s\n', argF);
+        catch ME
+            error('Error evaluating F: %s\n', ME.message);
+        end
+    end
     
     % Parse optional name-value pairs
     optionalArgs = {};
