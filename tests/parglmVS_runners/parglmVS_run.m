@@ -144,23 +144,27 @@ function parglmVS_run(varargin)
     % Open the CSV file for writing
     fid = fopen('parglmVS_matlab.csv', 'w');
 
-    % Write the headers (labels)
-    fprintf(fid, '%s,', T.labels{:});
-    fprintf(fid, '\n');  % New line after headers
+    % Los datos numéricos están en las celdas 5 a 10 de T.data
+    indices_data = 5:10;
 
-    % Write the data from each cell
     for i = 1:numel(T.data)
-        data = T.data{i};  % Get the content of the cell
-        
-        % Check if the data is numeric
-        if isnumeric(data)
-            % If numeric, convert to text and write
-            fprintf(fid, '%f,', data);
-        else
-            % If not numeric, convert to text
-            fprintf(fid, '%s,', num2str(data));
+        if ~isempty(T.data{i}) && isnumeric(T.data{i})
+            row_data = T.data{i};
+            fprintf(fid, '%f,', row_data(:));
+            fprintf(fid, '\n');
+        elseif ~isempty(T.data{i}) && iscell(T.data{i})
+            for j = 1:numel(T.data{i})
+                if isnumeric(T.data{i}{j})
+                    fprintf(fid, '%f,', T.data{i}{j});
+                else
+                    fprintf(fid, '%s,', num2str(T.data{i}{j}));
+                end
+                if j < numel(T.data{i})
+                    fprintf(fid, ',');
+                end
+            end
+            fprintf(fid, '\n');
         end
-        fprintf(fid, '\n');  % New line after each cell
     end
 
     % Close the file

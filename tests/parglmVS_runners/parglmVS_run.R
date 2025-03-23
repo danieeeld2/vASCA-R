@@ -133,7 +133,7 @@ parglmVS_run <- function(...) {
                      coding = optionalArgs$coding, nested = optionalArgs$nested)
 
   # Save results to CSV file
-  write.csv(result$T, file = "parglmVS_r.csv", row.names = FALSE)
+  write.table(result$T[, 2:ncol(result$T)], file = "parglmVS_r.csv", sep = ",", row.names = FALSE, col.names = FALSE, quote = FALSE, na = "NA")
 }
 
 # Run the parglmVS_run function
