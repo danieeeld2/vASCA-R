@@ -12,20 +12,20 @@ import (
 	"testing"
 )
 
-// Ejecuta un script externo (Octave/MATLAB o R)
+// Executes an external script (Octave/MATLAB or R)
 func runScriptParglmVS(script string, args ...string) error {
 	cmd := exec.Command(script, args...)
 
-	// Capturar la salida estándar y de error
+	// Capture standard output and error output
 	var out, errOut strings.Builder
 	cmd.Stdout = &out
 	cmd.Stderr = &errOut
 
 	err := cmd.Run()
 	if err != nil {
-		fmt.Printf("Salida estándar de %s:\n%s\n", script, out.String())
-		fmt.Printf("Error de %s:\n%s\n", script, errOut.String())
-		return fmt.Errorf("error ejecutando el script %s: %v", script, err)
+		fmt.Printf("Standard output of %s:\n%s\n", script, out.String())
+		fmt.Printf("Error output of %s:\n%s\n", script, errOut.String())
+		return fmt.Errorf("error executing script %s: %v", script, err)
 	}
 	return nil
 }
@@ -130,29 +130,29 @@ func TestCompareMATLABAndROutput(t *testing.T) {
 								t.Run(testName, func(t *testing.T) {
 									args := []string{dataset.X, dataset.F, "Model", model, "Preprocessing", prep, "Permutations", "1000", "Ts", s, "Fmtc", f, "Ordinal", ord, "Coding", cod}
 
-									// Ejecutar Octave
+									// Run Octave
 									if err := runScriptParglmVS("octave", append([]string{"--no-gui", "-q", "./parglmVS_runners/parglmVS_run.m"}, args...)...); err != nil {
-										t.Fatalf("error ejecutando Octave: %v", err)
+										t.Fatalf("error executing Octave: %v", err)
 									}
 
-									// Ejecutar R
+									// Run R
 									if err := runScriptParglmVS("Rscript", append([]string{"./parglmVS_runners/parglmVS_run.R"}, args...)...); err != nil {
-										t.Fatalf("error ejecutando R: %v", err)
+										t.Fatalf("error executing R: %v", err)
 									}
 
-									// Leer resultados
+									// Read results
 									matlabValues, err := readResultsCSV("parglmVS_matlab.csv")
 									if err != nil {
-										t.Fatalf("error leyendo MATLAB: %v", err)
+										t.Fatalf("error reading MATLAB: %v", err)
 									}
 
 									rValues, err := readResultsCSV("parglmVS_r.csv")
 									if err != nil {
-										t.Fatalf("error leyendo R: %v", err)
+										t.Fatalf("error reading R: %v", err)
 									}
 
 									if !compareNumericSlices(matlabValues, transpose(rValues), tolerance) {
-										t.Errorf("Diferencias entre MATLAB y R en %s", testName)
+										t.Errorf("Differences between MATLAB and R in %s", testName)
 									}
 								})
 							}
