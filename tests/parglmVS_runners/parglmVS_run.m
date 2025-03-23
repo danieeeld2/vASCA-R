@@ -144,9 +144,6 @@ function parglmVS_run(varargin)
     % Open the CSV file for writing
     fid = fopen('parglmVS_matlab.csv', 'w');
 
-    % Los datos numéricos están en las celdas 5 a 10 de T.data
-    indices_data = 5:10;
-
     for i = 1:numel(T.data)
         if ~isempty(T.data{i}) && isnumeric(T.data{i})
             row_data = T.data{i};
