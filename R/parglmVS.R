@@ -806,7 +806,10 @@ parglmVS <- function(X, F, ...) {
     NaN,
     NaN
   )
-  pValue <- c(NaN, apply(parglmo$p, 2, min), NaN, NaN)
+  num_p_values <- length(parglmo$p)
+  num_rows <- num_p_values / nFactors
+  p_matrix <- matrix(parglmo$p, nrow = num_rows, ncol = nFactors)
+  pValue <- c(NaN, apply(p_matrix, 2, min), NaN, NaN)
 
   # Create the ANOVA-like table
   T <- data.frame(
