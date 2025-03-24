@@ -108,7 +108,8 @@ func TestCompareMATLABAndROutput(t *testing.T) {
 	datasets := []struct {
 		X, F string
 	}{
-		{"../datasets/tests_datasets/X1.csv", "../datasets/tests_datasets/F1.csv"},
+		{"../datasets/tests_datasets/X1.csv", "../datasets/tests_datasets/F1.csv"},         // One factor
+		{"../datasets/tests_datasets/X_test.csv", "../datasets/tests_datasets/F_test.csv"}, // Three factors
 		// {"../datasets/tests_datasets/X2.csv", "../datasets/tests_datasets/F2.csv"},
 	}
 	tolerance := 1e-6
