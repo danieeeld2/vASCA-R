@@ -246,6 +246,7 @@ parglmVS <- function(X, F, ...) {
         # For factors that are not nested, create dummy variables for each level, 
         # expand the design matrix D, and apply the appropriate coding for the factor's levels.
         uF <- unique(F[,f])
+        uF <- sort(uF)
         parglmo$nLevels[f] <- length(uF)
         n_levels <- length(uF)
 
@@ -286,6 +287,7 @@ parglmVS <- function(X, F, ...) {
         for (j in 1:length(urF)) {
           rind <- which(F[,ref] == urF[j])
           uF <- unique(F[rind,f])
+          uF <- sort(uF)
           n_levels_nested <- length(uF)
           parglmo$nLevels[f] <- parglmo$nLevels[f] + n_levels_nested
 
@@ -449,39 +451,76 @@ parglmVS <- function(X, F, ...) {
 
   if (nInteractions) {
     # Vectorize the SSQ values
-    SSQFactors_first <- as.vector(SSQFactors[1, 1, ])
+    SSQFactors_first <- as.vector(SSQFactors[1, , ])
     SSQInteractions_first <- as.vector(SSQInteractions[1, 1, ])
-    
+
+    # Determine the number of factors
+    nFactors <- dim(SSQFactors)[2]
+
     # Adjust dimensions to match
-    len <- max(length(SSQinter), length(SSQFactors_first), length(SSQInteractions_first), length(SSQresiduals[1,]))
-    
+    len <- length(SSQinter) # Assuming length of SSQinter is the number of effects
+
     # Adjust the denominator to have the correct length
     denom <- rep(SSQX, length.out = len)
-    
+
+    # Initialize a list to store factor effects
+    factor_effects_list <- list()
+    if (length(dim(SSQFactors)) == 3) {
+        for (i in 1:nFactors) {
+            factor_effects_list[[i]] <- SSQFactors[1, i, ]
+        }
+    } else if (length(dim(SSQFactors)) == 2) {
+        for (i in 1:nFactors) {
+            factor_effects_list[[i]] <- SSQFactors[1, i]
+        }
+    } else {
+        stop("Unexpected dimensions for SSQFactors")
+    }
+
+    # Combine factor effects into a matrix
+    factor_effects_matrix <- do.call(cbind, factor_effects_list)
+
     # Calculate the percentage effects
     parglmo$effects <- 100 * (cbind(
       matrix(SSQinter, nrow = len, ncol = 1),
-      matrix(SSQFactors_first, nrow = len, ncol = 1),
+      factor_effects_matrix,
       matrix(SSQInteractions_first, nrow = len, ncol = 1),
       matrix(SSQresiduals[1,], nrow = len, ncol = 1)
-    ) / matrix(denom, nrow = len, ncol = 4))
-    
+    ) / matrix(denom, nrow = len, ncol = 1 + nFactors + 1 + 1)) # inter + factors + interactions + residuals
+
   } else {
-    # Vectorize the SSQ values
-    SSQFactors_first <- as.vector(SSQFactors[1, 1, ])
-    
+    # Determine the number of factors
+    nFactors <- dim(SSQFactors)[2]
+
     # Adjust dimensions to match
-    len <- max(length(SSQinter), length(SSQFactors_first), length(SSQresiduals[1,]))
-    
+    len <- length(SSQinter) # Assuming length of SSQinter is the number of effects
+
     # Adjust the denominator to have the correct length
     denom <- rep(SSQX, length.out = len)
-    
+
+    # Initialize a list to store factor effects
+    factor_effects_list <- list()
+    if (length(dim(SSQFactors)) == 3) {
+        for (i in 1:nFactors) {
+            factor_effects_list[[i]] <- SSQFactors[1, i, ]
+        }
+    } else if (length(dim(SSQFactors)) == 2) {
+        for (i in 1:nFactors) {
+            factor_effects_list[[i]] <- SSQFactors[1, i]
+        }
+    } else {
+        stop("Unexpected dimensions for SSQFactors")
+    }
+
+    # Combine factor effects into a matrix
+    factor_effects_matrix <- do.call(cbind, factor_effects_list)
+
     # Calculate the percentage effects
     parglmo$effects <- 100 * (cbind(
       matrix(SSQinter, nrow = len, ncol = 1),
-      matrix(SSQFactors_first, nrow = len, ncol = 1),
+      factor_effects_matrix,
       matrix(SSQresiduals[1,], nrow = len, ncol = 1)
-    ) / matrix(denom, nrow = len, ncol = 3))
+    ) / matrix(denom, nrow = len, ncol = 1 + nFactors + 1)) # inter + factors + residuals
   }
 
   parglmo$residuals <- Xresiduals
@@ -740,31 +779,34 @@ parglmVS <- function(X, F, ...) {
   # Calculate the sum of squares (SSQ) based on whether interactions exist
   if (nInteractions > 0) {
     SSQ_inter_sum <- sum(t(SSQinter))
-    SSQ_factors_sum <- sum(aperm(SSQFactors[1,,, drop = FALSE], c(3, 2, 1)))
-    SSQ_interactions_sum <- sum(aperm(SSQInteractions[1,,, drop = FALSE], c(3, 2, 1)))
-    SSQ_residuals_sum <- sum(t(SSQresiduals[1, , drop = FALSE]))
+    SSQFactors_perm <- aperm(SSQFactors[1,,,drop=FALSE], c(3,2,1))
+    SSQ_factors <- apply(SSQFactors_perm, 2, sum)
+    SSQInteractions_perm <- aperm(SSQInteractions[1,,,drop=FALSE], c(3,2,1))
+    SSQ_interactions <- apply(SSQInteractions_perm, 2, sum)
+    SSQ_residuals_sum <- sum(t(SSQresiduals[1,,drop=FALSE]))
     SSQ_x_sum <- sum(t(SSQX))
-    SSQ <- c(SSQ_inter_sum, SSQ_factors_sum, SSQ_interactions_sum, SSQ_residuals_sum, SSQ_x_sum)
+    SSQ <- c(SSQ_inter_sum, SSQ_factors, SSQ_interactions, SSQ_residuals_sum, SSQ_x_sum)
   } else {
     SSQ_inter_sum <- sum(t(SSQinter))
-    SSQ_factors_sum <- sum(aperm(SSQFactors[1,,, drop = FALSE], c(3, 2, 1)))
-    SSQ_residuals_sum <- sum(t(SSQresiduals[1, , drop = FALSE]))
+    SSQFactors_perm <- aperm(SSQFactors[1,,,drop=FALSE], c(3,2,1))
+    SSQ_factors <- apply(SSQFactors_perm, 2, sum)
+    SSQ_residuals_sum <- sum(t(SSQresiduals[1,,drop=FALSE]))
     SSQ_x_sum <- sum(t(SSQX))
-    SSQ <- c(SSQ_inter_sum, SSQ_factors_sum, SSQ_residuals_sum, SSQ_x_sum)
+    SSQ <- c(SSQ_inter_sum, SSQ_factors, SSQ_residuals_sum, SSQ_x_sum)
   }
 
   # Calculate means, degrees of freedom, mean squares, and F-statistics
   par <- c(colMeans(parglmo$effects), 100)
   DoF <- c(1, df, dfint, Rdf, Tdf)
   MSQ <- SSQ / DoF
-  F_factors_max <- max(FFactors[1, 1,])
-  if (any(dim(FInteractions) == 0)) {
-    F_interactions_max <- NaN
-  } else {
-    F_interactions_max <- max(FInteractions[1, 1,])
-  }
-  F <- c(NaN, F_factors_max, F_interactions_max, NaN)
-  pValue <- c(NaN, min(parglmo$p), NaN, NaN)
+  F <- c(
+    NaN,
+    if(length(dim(FFactors)) == 3) apply(FFactors[1,,, drop = FALSE], 2, max, na.rm = TRUE) else NaN,
+    if(length(dim(FInteractions)) == 3) apply(FInteractions[1,,, drop = FALSE], 2, max, na.rm = TRUE) else NaN,
+    NaN,
+    NaN
+  )
+  pValue <- c(NaN, apply(parglmo$p, 2, min), NaN, NaN)
 
   # Create the ANOVA-like table
   T <- data.frame(
