@@ -134,6 +134,24 @@ function parglmVS_run(varargin)
     else
         Nested = [];
     end
+
+    % Adjust coding dimensions
+    codingIdx = find(strcmp(optionalArgs, 'Coding'));
+    if ~isempty(codingIdx)
+        codingValue = optionalArgs{codingIdx + 1};
+        if numel(codingValue) == 1 && size(F, 2) > 1
+            optionalArgs{codingIdx + 1} = repmat(codingValue, 1, size(F, 2));
+        end
+    end
+
+    % Adjust ordinal dimensions
+    ordinalIdx = find(strcmp(optionalArgs, 'Ordinal'));
+    if ~isempty(ordinalIdx)
+        ordinalValue = optionalArgs{ordinalIdx + 1};
+        if numel(ordinalValue) == 1 && size(F, 2) > 1
+            optionalArgs{ordinalIdx + 1} = repmat(ordinalValue, 1, size(F, 2));
+        end
+    end
     
     % Add path to parglmVS.m script
     addpath('../matlab');
