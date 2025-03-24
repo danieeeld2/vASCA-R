@@ -108,7 +108,12 @@ parglmVS_run <- function(...) {
         } else if (key == "model") {
           value <- as.character(value)
         } else if (key == "nested") {
-          value <- eval(parse(text = value))  # Convert string to matrix
+          # Remove "c(" and ")" from the string
+          value <- gsub("[c()]", "", value)
+          # Split the string by comma and convert to numeric
+          value <- as.numeric(strsplit(value, ",")[[1]])
+          # Create a matrix with one row and two columns
+          value <- matrix(value, nrow = 1, byrow = TRUE)
         }
         optionalArgs[[key]] <- value
       } else if (key == "ts") {  # Handle Ts explicitly
@@ -117,6 +122,15 @@ parglmVS_run <- function(...) {
         optionalArgs[["Fmtc"]] <- as.integer(value)
       } 
     }
+  }
+
+  # Adjust ordinal and coding dimensions
+  if (length(optionalArgs$coding) == 1 && ncol(F) > 1) {
+    optionalArgs$coding <- rep(optionalArgs$coding, ncol(F))
+  }
+
+  if (length(optionalArgs$ordinal) == 1 && ncol(F) > 1) {
+    optionalArgs$ordinal <- rep(optionalArgs$ordinal, ncol(F))
   }
 
   # Load the parglmVS function
