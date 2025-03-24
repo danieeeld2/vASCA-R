@@ -88,15 +88,23 @@ func compareNumericSlices(matlabValues, rValues [][]float64, tolerance float64) 
 	if len(matlabValues) != len(rValues) {
 		return false
 	}
+	lastRow := len(matlabValues) - 1
+
 	for i := 0; i < len(matlabValues); i++ {
 		if len(matlabValues[i]) != len(rValues[i]) {
 			return false
+		}
+
+		// More tolerance for p-values since they depends on random permutations
+		currentTolerance := tolerance
+		if i == lastRow {
+			currentTolerance = 0.1
 		}
 		for j := 0; j < len(matlabValues[i]); j++ {
 			if math.IsNaN(matlabValues[i][j]) && math.IsNaN(rValues[i][j]) {
 				continue
 			}
-			if math.Abs(matlabValues[i][j]-rValues[i][j]) > tolerance {
+			if math.Abs(matlabValues[i][j]-rValues[i][j]) > currentTolerance {
 				return false
 			}
 		}
@@ -129,7 +137,11 @@ func TestCompareMATLABAndROutput(t *testing.T) {
 							for _, cod := range coding {
 								testName := fmt.Sprintf("%s_%s_%s_%s_%s_%s_%s", filepath.Base(dataset.X), model, prep, s, ord, f, cod)
 								t.Run(testName, func(t *testing.T) {
-									args := []string{dataset.X, dataset.F, "Model", model, "Preprocessing", prep, "Permutations", "1000", "Ts", s, "Fmtc", f, "Ordinal", ord, "Coding", cod}
+									perms := "1000"
+									if dataset.X == "../datasets/tests_datasets/X_test.csv" {
+										perms = "5000"
+									}
+									args := []string{dataset.X, dataset.F, "Model", model, "Preprocessing", prep, "Permutations", perms, "Ts", s, "Fmtc", f, "Ordinal", ord, "Coding", cod}
 
 									// Run Octave
 									if err := runScriptParglmVS("octave", append([]string{"--no-gui", "-q", "./parglmVS_runners/parglmVS_run.m"}, args...)...); err != nil {
