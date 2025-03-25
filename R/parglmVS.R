@@ -173,11 +173,11 @@ parglmVS <- function(X, F, ...) {
   ########################### Main Code ###########################
 
   # Number of interactions
-  if (is.null(interactions) || !is.matrix(interactions) || nrow(interactions) == 0) {
+  if (is.null(interactions) || length(interactions) == 0) {
     nInteractions <- 0
     interactions <- matrix()
   } else {
-      nInteractions <- nrow(interactions)
+    nInteractions <- 1
   }
 
   # Correct for multiple tests if 'fmtc' is TRUE
@@ -531,7 +531,7 @@ parglmVS <- function(X, F, ...) {
   # depending on the available data. The residuals of the permuted data are then calculated.
   # The sum of squared residuals for the permuted data is stored for further comparison with the original model.
 
-  for (j in 1:nPerm*mtcc) {
+  for (j in 1:(nPerm * mtcc)) {
     perms <- sample(nrow(Xnan))  # permuted data (permute whole rows)
     X <- Xnan[perms, ]
     r_c <- which(is.na(X), arr.ind = TRUE)
@@ -806,10 +806,18 @@ parglmVS <- function(X, F, ...) {
     NaN,
     NaN
   )
-  num_p_values <- length(parglmo$p)
-  num_rows <- num_p_values / nFactors
-  p_matrix <- matrix(parglmo$p, nrow = num_rows, ncol = nFactors)
-  pValue <- c(NaN, apply(p_matrix, 2, min), NaN, NaN)
+  if(is.null(dim(parglmo$p))){
+    nRows <- length(parglmo$p)/mtcc
+    p_copy <- matrix(0, nrow = nRows, ncol = mtcc)
+    for (i in 1:nRows) {
+      for(j in 1:mtcc) {
+        p_copy[i, j] <- parglmo$p[(i - 1) * mtcc + j]
+      }
+    }
+    pValue <- c(NA, apply(p_copy, 2, min, na.rm = TRUE), NA, NA)
+  } else{
+    pValue <- c(NA, apply(parglmo$p, 2, min, na.rm = TRUE), NA, NA)
+  }
 
   # Create the ANOVA-like table
   T <- data.frame(
