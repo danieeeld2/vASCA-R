@@ -15,13 +15,15 @@ parglmVS_run <- function(...) {
   #   - Ordinal: Whether factors are ordinal (default: rep(0, ncol(F))).
   #   - Fmtc: Multiple test correction (0: none, 1: Bonferroni, 2: Holm, 3: Benjamini-Hochberg, 4: Q-value).
   #   - Coding: Coding type (0: sum/deviation, 1: reference).
-  #   - Nested: Nested factors (default: NULL).
+  #   - Nested: Nested factors (default: NULL. Provide pairs numbers separated by commas (e.g: 2,1,3,2)).
   #
   # Example usage in R:
   #   Rscript parglmVS_run.R 'matrix(runif(4000), nrow=40, ncol=100)' 'matrix(rnorm(40), nrow=40, ncol=1)'
   #   Rscript parglmVS_runners/parglmVS_run.R 'matrix(runif(4000), nrow=40, ncol=100)' 'matrix(rnorm(40), nrow=40, ncol=1)'   Model "interaction"   Preprocessing 1   Permutations 500   Ts 2   Fmtc 3
   #
   # You can also replace 'matrix(runif(4000), nrow=40, ncol=100)' and 'matrix(rnorm(40), nrow=40, ncol=1)' with the paths to CSV files.
+  #
+  # For Nested parameter, provide pairs of numbers separated by commas (e.g., '2,1,3,2').
   #
   # Outputs:
   #   - Saves the results as 'parglmVS_r.csv'
@@ -39,7 +41,7 @@ parglmVS_run <- function(...) {
                "- Ordinal: Whether factors are ordinal (default: rep(0, ncol(F))).\n",
                "- Fmtc: Multiple test correction (0: none, 1: Bonferroni, 2: Holm, 3: Benjamini-Hochberg, 4: Q-value).\n",
                "- Coding: Coding type (0: sum/deviation, 1: reference).\n",
-               "- Nested: Nested factors (default: NULL)."))
+               "- Nested: Nested factors (default: NULL. Format: Nested 2,1,3,2)."))
   }
 
   # Function to check if a string looks like a file path
@@ -108,12 +110,11 @@ parglmVS_run <- function(...) {
         } else if (key == "model") {
           value <- as.character(value)
         } else if (key == "nested") {
-          # Remove "c(" and ")" from the string
-          value <- gsub("[c()]", "", value)
-          # Split the string by comma and convert to numeric
-          value <- as.numeric(strsplit(value, ",")[[1]])
-          # Create a matrix with one row and two columns
-          value <- matrix(value, nrow = 1, byrow = TRUE)
+          numbers <- as.numeric(strsplit(value, ",")[[1]])
+          if(length(numbers) %% 2 != 0) {
+            stop("Nested parameter must contain pairs of numbers (e.g., '2,1,3,2')")
+          }
+          value <- matrix(numbers, ncol = 2, byrow = TRUE)
         }
         optionalArgs[[key]] <- value
       } else if (key == "ts") {  # Handle Ts explicitly
