@@ -21,21 +21,33 @@ allinter <- function(factors, order) {
 }
 
 # Computes interaction terms for a given dataset D based on specified factors.
-computaDint <- function(interactions, factors, D) { # Compute coding matrix
+computaDint <- function(interactions, factors, D) {
   if (length(interactions) > 1) {
+    # Recursive call similar to MATLAB
     deepD <- computaDint(interactions[2:length(interactions)], factors, D)
+    
+    # Pre-allocate matrix to mimic MATLAB's dynamic column addition
     Dout <- matrix(0, nrow = nrow(D), ncol = 0)
+    
+    # Nested loops similar to MATLAB version
     for (k in factors[[interactions[1]]]$Dvars) {
-      for (l in 1:ncol(deepD)) {
-        Dout <- cbind(Dout, D[,k] * deepD[,l])
+      if (ncol(deepD) > 0) {
+        for (l in 1:ncol(deepD)) {
+          # Dynamically add columns similar to MATLAB's Dout(:,end+1)
+          Dout <- cbind(Dout, D[,k] * deepD[,l])
+        }
+      } else {
+        # If deepD is empty, add the current column
+        Dout <- cbind(Dout, D[,k])
       }
     }
   } else {
-    Dout <- D[, factors[[interactions]]$Dvars]
+    # Base case: return columns for the single interaction
+    Dout <- D[, factors[[interactions]]$Dvars, drop = FALSE]
   }
+  
   return(Dout)
 }
-
 ###############################################################################
 
 ###############################################################################
@@ -434,11 +446,13 @@ parglmVS <- function(X, F, ...) {
   # Interactions
   if (length(parglmo$interactions) > 0) {
     for (i in 1:nInteractions) {
-        parglmo$interactions[[i]]$matrix <- D[, parglmo$interactions[[i]]$Dvars] %*% B[parglmo$interactions[[i]]$Dvars, ]
-        SSQInteractions[1, i, ] <- colSums(parglmo$interactions[[i]]$matrix^2)
-        FInteractions[1, i, ] <- (SSQInteractions[1, i, ] / dfint[i]) / (SSQresiduals[1, ] / Rdf)
+      D_sub <- D[, parglmo$interactions[[i]]$Dvars, drop = FALSE]
+      B_sub <- B[parglmo$interactions[[i]]$Dvars, , drop = FALSE]
+      parglmo$interactions[[i]]$matrix <- D_sub %*% B_sub
+      SSQInteractions[1, i, ] <- colSums(parglmo$interactions[[i]]$matrix^2)
+      FInteractions[1, i, ] <- (SSQInteractions[1, i, ] / dfint[i]) / (SSQresiduals[1, ] / Rdf)
     }
-  } 
+  }
 
   SSQinter <- matrix(colSums(parglmo$inter^2), nrow = 1)  
   SSQX <- matrix(colSums(X^2, na.rm = TRUE), nrow = 1)  
@@ -449,7 +463,7 @@ parglmVS <- function(X, F, ...) {
   # If no interactions are present, the calculation excludes interaction effects.
   # Finally, store the residuals from the GLM model for further analysis.
 
-  if (nInteractions) {
+  if (nInteractions > 0) {
     # Vectorize the SSQ values
     SSQFactors_first <- as.vector(SSQFactors[1, , ])
     SSQInteractions_first <- as.vector(SSQInteractions[1, 1, ])
@@ -458,7 +472,7 @@ parglmVS <- function(X, F, ...) {
     nFactors <- dim(SSQFactors)[2]
 
     # Adjust dimensions to match
-    len <- length(SSQinter) # Assuming length of SSQinter is the number of effects
+    len <- length(SSQinter) 
 
     # Adjust the denominator to have the correct length
     denom <- rep(SSQX, length.out = len)
@@ -493,7 +507,7 @@ parglmVS <- function(X, F, ...) {
     nFactors <- dim(SSQFactors)[2]
 
     # Adjust dimensions to match
-    len <- length(SSQinter) # Assuming length of SSQinter is the number of effects
+    len <- length(SSQinter) 
 
     # Adjust the denominator to have the correct length
     denom <- rep(SSQX, length.out = len)
@@ -589,7 +603,7 @@ parglmVS <- function(X, F, ...) {
     
     if(length(parglmo$interactions) > 0){
       for (i in 1:nInteractions) {
-        interacts[[i]]$matrix <- D[, parglmo$interactions[[i]]$Dvars] %*% B[parglmo$interactions[[i]]$Dvars, ]
+        interacts[[i]]$matrix <- D[, parglmo$interactions[[i]]$Dvars, drop=FALSE] %*% B[parglmo$interactions[[i]]$Dvars, , drop=FALSE]
         SSQi[i, ] <- colSums(interacts[[i]]$matrix^2)
         Fi[i, ] <- (SSQi[i, ]/dfint[i])/(SSQresiduals[1 + j, ]/Rdf)
       }
@@ -806,18 +820,15 @@ parglmVS <- function(X, F, ...) {
     NaN,
     NaN
   )
-  if(is.null(dim(parglmo$p))){
-    nRows <- length(parglmo$p)/mtcc
-    p_copy <- matrix(0, nrow = nRows, ncol = mtcc)
-    for (i in 1:nRows) {
-      for(j in 1:mtcc) {
-        p_copy[i, j] <- parglmo$p[(i - 1) * mtcc + j]
-      }
-    }
-    pValue <- c(NA, apply(p_copy, 2, min, na.rm = TRUE), NA, NA)
-  } else{
-    pValue <- c(NA, apply(parglmo$p, 2, min, na.rm = TRUE), NA, NA)
+  num_p_values <- length(parglmo$p)
+  if(nFactors == 1 || nInteractions == 0){
+    num_rows <- num_p_values / nFactors
+    p_matrix <- matrix(parglmo$p, nrow = num_rows, ncol = nFactors)
+  } else {
+    num_rows <- num_p_values / (nFactors + nInteractions)
+    p_matrix <- matrix(parglmo$p, nrow = num_rows, ncol = nFactors + nInteractions)
   }
+  pValue <- c(NaN, apply(p_matrix, 2, min), NaN, NaN)
 
   # Create the ANOVA-like table
   T <- data.frame(
