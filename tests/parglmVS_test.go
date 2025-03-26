@@ -112,7 +112,7 @@ func compareNumericSlices(matlabValues, rValues [][]float64, tolerance float64) 
 	return true
 }
 
-func TestCompareMATLABAndROutput(t *testing.T) {
+func TestCompareMATLABAndROutputWithoutNested(t *testing.T) {
 	datasets := []struct {
 		X, F string
 	}{
@@ -169,6 +169,67 @@ func TestCompareMATLABAndROutput(t *testing.T) {
 									}
 								})
 							}
+						}
+					}
+				}
+			}
+		}
+	}
+	os.Remove("parglmVS_matlab.csv")
+	os.Remove("parglmVS_r.csv")
+}
+
+func TestCompareMATLABAndROutputWithNested(t *testing.T) {
+	dataset := struct {
+		X, F string
+	}{
+		X: "../datasets/tests_datasets/X_test.csv",
+		F: "../datasets/tests_datasets/F_test.csv",
+	}
+	tolerance := 1e-6
+	models := []string{"linear", "interaction", "full"}
+	preprocessing := []string{"0", "1", "2"}
+	ts := []string{"0", "1", "2"}
+	ordinal := []string{"0", "1"}
+	fmtc := []string{"0", "1", "2", "3", "4"}
+	coding := []string{"0", "1"}
+
+	for _, model := range models {
+		for _, prep := range preprocessing {
+			for _, s := range ts {
+				for _, ord := range ordinal {
+					for _, f := range fmtc {
+						for _, cod := range coding {
+							testName := fmt.Sprintf("%s_%s_%s_%s_%s_%s_%s", filepath.Base(dataset.X), model, prep, s, ord, f, cod)
+							t.Run(testName, func(t *testing.T) {
+								perms := "15000"
+								args := []string{dataset.X, dataset.F, "Model", model, "Preprocessing", prep, "Permutations", perms, "Ts", s, "Fmtc", f, "Ordinal", ord, "Coding", cod}
+
+								// Run Octave with Nested argument
+								if err := runScriptParglmVS("octave", append([]string{"--no-gui", "-q", "./parglmVS_runners/parglmVS_run.m"}, append(args, "Nested", "[2 1; 3 2]")...)...); err != nil {
+									t.Fatalf("error executing Octave with Nested: %v", err)
+								}
+
+								// Run R with Nested argument
+								if err := runScriptParglmVS("Rscript", append([]string{"./parglmVS_runners/parglmVS_run.R"}, append(args, "Nested", "2,1,3,2")...)...); err != nil {
+									t.Fatalf("error executing R with Nested: %v", err)
+								}
+
+								// Read results
+								matlabValues, err := readResultsCSV("parglmVS_matlab.csv")
+								if err != nil {
+									t.Fatalf("error reading MATLAB: %v", err)
+								}
+
+								rValues, err := readResultsCSV("parglmVS_r.csv")
+								if err != nil {
+									t.Fatalf("error reading R: %v", err)
+								}
+
+								if !compareNumericSlices(matlabValues, transpose(rValues), tolerance) {
+									t.Errorf("Differences between MATLAB and R in %s", testName)
+								}
+							})
 						}
 					}
 				}
