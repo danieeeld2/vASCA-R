@@ -139,7 +139,7 @@ func TestCompareMATLABAndROutputWithoutNested(t *testing.T) {
 								t.Run(testName, func(t *testing.T) {
 									perms := "1000"
 									if dataset.X == "../datasets/tests_datasets/X_test.csv" {
-										perms = "5000"
+										perms = "15000"
 									}
 									args := []string{dataset.X, dataset.F, "Model", model, "Preprocessing", prep, "Permutations", perms, "Ts", s, "Fmtc", f, "Ordinal", ord, "Coding", cod}
 
@@ -202,7 +202,7 @@ func TestCompareMATLABAndROutputWithNested(t *testing.T) {
 						for _, cod := range coding {
 							testName := fmt.Sprintf("%s_%s_%s_%s_%s_%s_%s", filepath.Base(dataset.X), model, prep, s, ord, f, cod)
 							t.Run(testName, func(t *testing.T) {
-								perms := "5000"
+								perms := "15000"
 								args := []string{dataset.X, dataset.F, "Model", model, "Preprocessing", prep, "Permutations", perms, "Ts", s, "Fmtc", f, "Ordinal", ord, "Coding", cod}
 
 								// Run Octave with Nested argument
