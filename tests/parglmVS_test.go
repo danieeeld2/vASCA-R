@@ -98,7 +98,7 @@ func compareNumericSlices(matlabValues, rValues [][]float64, tolerance float64) 
 		// More tolerance for p-values since they depends on random permutations
 		currentTolerance := tolerance
 		if i == lastRow {
-			currentTolerance = 0.15 // Because it depends on random permutations and I don't wont to test with more of 10000 because of time
+			currentTolerance = 0.1 // Because it depends on random permutations and I don't wont to test with more of 10000 because of time
 		}
 		for j := 0; j < len(matlabValues[i]); j++ {
 			if math.IsNaN(matlabValues[i][j]) && math.IsNaN(rValues[i][j]) {
@@ -137,7 +137,7 @@ func TestCompareMATLABAndROutputWithoutNested(t *testing.T) {
 							for _, cod := range coding {
 								testName := fmt.Sprintf("%s_%s_%s_%s_%s_%s_%s", filepath.Base(dataset.X), model, prep, s, ord, f, cod)
 								t.Run(testName, func(t *testing.T) {
-									t.Skip("Skipping this test for the workflow, because it runs out of time. It is better to run it locally. There is a capture of the test passed on PR #30")
+									//t.Skip("Skipping this test for the workflow, because it runs out of time. It is better to run it locally. There is a capture of the test passed on PR #30")
 									perms := "1000"
 									if dataset.X == "../datasets/tests_datasets/X_test.csv" {
 										perms = "15000"
@@ -203,8 +203,8 @@ func TestCompareMATLABAndROutputWithNested(t *testing.T) {
 						for _, cod := range coding {
 							testName := fmt.Sprintf("%s_%s_%s_%s_%s_%s_%s", filepath.Base(dataset.X), model, prep, s, ord, f, cod)
 							t.Run(testName, func(t *testing.T) {
-								t.Skip("Skipping this test for the workflow, because it runs out of time. It is better to run it locally. There is a capture of the test passed on PR #30")
-								perms := "15000"
+								//t.Skip("Skipping this test for the workflow, because it runs out of time. It is better to run it locally. There is a capture of the test passed on PR #30")
+								perms := "22000"
 								args := []string{dataset.X, dataset.F, "Model", model, "Preprocessing", prep, "Permutations", perms, "Ts", s, "Fmtc", f, "Ordinal", ord, "Coding", cod}
 
 								// Run Octave with Nested argument
