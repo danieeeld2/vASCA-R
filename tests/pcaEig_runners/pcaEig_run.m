@@ -23,7 +23,7 @@ function pcaEig_run(varargin)
     %   pcaEig_run('data.csv', 'PCs', '[1 2 3]')
     %
     % Outputs:
-    %   - Saves the results as 'pcaEig_results.csv'
+    %   - Saves the results as 'pcaEig_matlab.csv'
     %   - Results include: scores, loads, variance, and other model information
     
     % Get command-line arguments
@@ -134,7 +134,7 @@ function pcaEig_run(varargin)
     % Close the file
     fclose(fid);
     
-    fprintf('Results saved to pcaEig_results.csv\n');
+    fprintf('Results saved to pcaEig_matlab.csv\n');
 end
 
 function tf = isoctave()
