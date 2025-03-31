@@ -93,19 +93,19 @@ for factor = 1 : vascao.nFactors
     end
     
     if pvals(M) <= thres
-        vascao.factors{factor}.stasig = true;
+        vascao.factors(factor).stasig = true;  % Change {} -> ()
         ind = parglmoVS.ordFactors(factor,1:M);
-        xf = vascao.factors{factor}.matrix(:,ind);
+        xf = vascao.factors(factor).matrix(:,ind);
         model = pcaEig(xf,'PCs',1:rank(xf));
     
         fnames = fieldnames(model);
         for n = 1:length(fnames)
-            vascao.factors{factor} = setfield(vascao.factors{factor},fnames{n},getfield(model,fnames{n}));
+            vascao.factors(factor).(fnames{n}) = model.(fnames{n});
         end
-        vascao.factors{factor}.ind = ind;
-        vascao.factors{factor}.scoresV = (xf+vascao.residuals(:,ind))*model.loads;
+        vascao.factors(factor).ind = ind;
+        vascao.factors(factor).scoresV = (xf+vascao.residuals(:,ind)) * model.loads;
     else
-        vascao.factors{factor}.stasig = false;
+        vascao.factors(factor).stasig = false;
     end
 end
 
@@ -115,23 +115,21 @@ for interaction = 1 : vascao.nInteractions
     pvals = parglmoVS.p(parglmoVS.ordInteractions(interaction,:),interaction+vascao.nFactors); 
     M = find(pvals==min(pvals)); M = M(end);
     if pvals(M) <= siglev
-        vascao.interactions{interaction}.stasig = true;
+        vascao.interactions(interaction).stasig = true; % Change {} -> ()
         ind = parglmoVS.ordInteractions(interaction,1:M);
-        xf = vascao.interactions{interaction}.matrix(:,ind);
-        for factor = 1 : vascao.interactions{1}.factors
-            xf = xf + vascao.factors{factor}.matrix(:,ind);
+        xf = vascao.interactions(interaction).matrix(:,ind);
+        for factor = 1 : vascao.interactions(1).factors
+            xf = xf + vascao.factors(factor).matrix(:,ind);
         end
         model = pcaEig(xf,1:rank(xf));
     
         fnames = fieldnames(model);
         for n = 1:length(fnames)
-            vascao.interactions{interaction} = setfield(vascao.interactions{interaction},fnames{n},getfield(model,fnames{n}));
+            vascao.interactions(interaction).(fnames{n}) = model.(fnames{n});
         end
-        vascao.interactions{interaction}.ind = ind;
-        vascao.interactions{interaction}.scoresV = (xf+vascao.residuals(:,ind))*model.loads;
+        vascao.interactions(interaction).ind = ind;
+        vascao.interactions(interaction).scoresV = (xf+vascao.residuals(:,ind)) * model.loads;
     else
-        vascao.interactions{interaction}.stasig = false;
+        vascao.interactions(interaction).stasig = false;
     end
 end
-
-vascao.type = 'VASCA';
