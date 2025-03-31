@@ -59,17 +59,10 @@ pcaEig_run <- function(...) {
   loadings <- model$loads
   variance <- model$var  
 
-  # Save the results to a CSV file
-  write.csv(data.frame(type = "PCA", value = "model"), "pcaEig_r.csv", row.names = FALSE)
-  write.csv(data.frame(type = "variance", value = variance), "pcaEig_r.csv", append = TRUE, row.names = FALSE)
-
-  # Write scores to CSV
-  scores_df <- as.data.frame(scores)
-  write.csv(scores_df, "pcaEig_r.csv", append = TRUE, row.names = FALSE)
-
-  # Write loadings to CSV
-  loadings_df <- as.data.frame(loadings)
-  write.csv(loadings_df, "pcaEig_r.csv", append = TRUE, row.names = FALSE)
+  # Open the file and write the values in the requested format
+  write.table(variance, "pcaEig_r.csv", sep = ",", row.names = FALSE, col.names = FALSE)
+  write.table(scores, "pcaEig_r.csv", sep = ",", append = TRUE, row.names = FALSE, col.names = FALSE)
+  write.table(loadings, "pcaEig_r.csv", sep = ",", append = TRUE, row.names = FALSE, col.names = FALSE)
 
   cat("Results saved to pcaEig_r.csv\n")
 }

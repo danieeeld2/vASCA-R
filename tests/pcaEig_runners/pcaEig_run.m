@@ -86,55 +86,32 @@ function pcaEig_run(varargin)
     % Call pcaEig function with optional arguments
     model = pcaEig(X, optionalArgs{:});
     
-    % Open the CSV file for writing
+    % Open file and write the values in the requested format
     fid = fopen('pcaEig_matlab.csv', 'w');
     
-    % Write header
-    fprintf(fid, 'type,value\n');
-    
-    % Write model type
-    fprintf(fid, 'type,%s\n', model.type);
-    
-    % Write variance
-    fprintf(fid, 'variance,%f\n', model.var);
-    
-    % Write latent variables
-    fprintf(fid, 'latent_variables,%s\n', mat2str(model.lvs));
-    
-    % Write scores matrix
-    fprintf(fid, 'scores,');
+    % Write the variance in the first cell of the first row
+    fprintf(fid, '%f\n', model.var);
+
+    % Write scores
     for i = 1:size(model.scores, 1)
-        for j = 1:size(model.scores, 2)
-            fprintf(fid, '%f', model.scores(i, j));
-            if j < size(model.scores, 2)
-                fprintf(fid, ',');
-            end
+        fprintf(fid, '%f', model.scores(i, 1));
+        for j = 2:size(model.scores, 2)
+            fprintf(fid, ',%f', model.scores(i, j));
         end
-        if i < size(model.scores, 1)
-            fprintf(fid, ';');
-        end
+        fprintf(fid, '\n');
     end
-    fprintf(fid, '\n');
-    
-    % Write loadings matrix
-    fprintf(fid, 'loadings,');
+
+    % Write loadings
     for i = 1:size(model.loads, 1)
-        for j = 1:size(model.loads, 2)
-            fprintf(fid, '%f', model.loads(i, j));
-            if j < size(model.loads, 2)
-                fprintf(fid, ',');
-            end
+        fprintf(fid, '%f', model.loads(i, 1));
+        for j = 2:size(model.loads, 2)
+            fprintf(fid, ',%f', model.loads(i, j));
         end
-        if i < size(model.loads, 1)
-            fprintf(fid, ';');
-        end
+        fprintf(fid, '\n');
     end
-    fprintf(fid, '\n');
     
-    % Close the file
     fclose(fid);
-    
-    fprintf('Results saved to pcaEig_matlab.csv\n');
+    fprintf('Results saved to pcaEig_matlab.csv\n');    
 end
 
 function tf = isoctave()
