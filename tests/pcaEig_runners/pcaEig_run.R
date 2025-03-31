@@ -1,4 +1,4 @@
-pcaEig_run <- function(X, ...) {
+pcaEig_run <- function(...) {
   # This function runs pcaEig function and saves the results to a CSV file.
   #
   # Usage:
@@ -21,50 +21,58 @@ pcaEig_run <- function(X, ...) {
   #   - Saves the results as 'pcaEig_r.csv'
   #   - Results include: scores, loads, variance, and other model information
 
+  # Check there is at least one argument
+  if (length(commandArgs(trailingOnly = TRUE)) < 1) {
+    stop("Not enough arguments. Usage: pcaEig_run(X, ...)\n")
+  }
+
+  # Take first argument as X
+  Xs <- commandArgs(trailingOnly = TRUE)[1]
+
   # Check if X is a file or a matrix
-  if (file.exists(X)) {
+  if (file.exists(Xs)) {
     # Load data from CSV file
-    X <- as.matrix(read.csv(X, header = FALSE))
-    cat("Loaded X from:", X, "\n")
+    X <- as.matrix(read.csv(Xs, header = FALSE))
+    cat("Loaded X from:", Xs, "\n")
   } else {
     # If X is a string representation of the matrix, evaluate it
-    X <- eval(parse(text = X))
-    cat("Evaluated X:", X, "\n")
+    X <- eval(parse(text = Xs))
+    cat("Evaluated X:", Xs, "\n")
   }
-  
+
   # Parse optional arguments
   args <- list(...)
   pcs <- args$PCs
-  
+
   if (is.null(pcs)) {
     pcs <- 1:ncol(X)  # Default: all PCs
   }
 
   # Load the pcaEig function
   source("../R/pcaEig.R")
-  
+
   # Call pcaEig function
   model <- pcaEig(X, PCs = pcs)
-  
+
   # Extract relevant results from the pcaEig model
   scores <- model$scores
-  loadings <- model$loadings
-  variance <- model$variance  # Adjust this if your pcaEig function stores it differently
-  
+  loadings <- model$loads
+  variance <- model$var  
+
   # Save the results to a CSV file
   write.csv(data.frame(type = "PCA", value = "model"), "pcaEig_r.csv", row.names = FALSE)
   write.csv(data.frame(type = "variance", value = variance), "pcaEig_r.csv", append = TRUE, row.names = FALSE)
-  
+
   # Write scores to CSV
   scores_df <- as.data.frame(scores)
   write.csv(scores_df, "pcaEig_r.csv", append = TRUE, row.names = FALSE)
-  
+
   # Write loadings to CSV
   loadings_df <- as.data.frame(loadings)
   write.csv(loadings_df, "pcaEig_r.csv", append = TRUE, row.names = FALSE)
-  
+
   cat("Results saved to pcaEig_r.csv\n")
 }
 
-# Run the function 
+# Run the function
 pcaEig_run()
