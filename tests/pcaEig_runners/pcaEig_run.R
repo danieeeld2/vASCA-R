@@ -10,12 +10,12 @@ pcaEig_run <- function(X, ...) {
   #   - 'PCs': Principal Components to consider (default: all PCs)
   #
   # Example usage in R:
-  #   pcaEig_run("rand(40, 100)")  # Pass a random matrix as a string
-  #   pcaEig_run("rand(40, 100)", PCs = c(1, 2, 3))  # Specify PCs to use
+  #   RScript pcaEig_run.R 'matrix(runif(4000), nrow=40, ncol=100)'  # Pass a matrix
+  #   RScript pcaEig_run.R 'matrix(runif(4000), nrow=40, ncol=100)' PCs=c(1,2,3)  # Pass a matrix with specified PCs
   #
   # You can also replace the matrix with a path to a CSV file:
-  #   pcaEig_run("data.csv")  # Pass a CSV file path
-  #   pcaEig_run("data.csv", PCs = c(1, 2, 3))  # Pass CSV file with specified PCs
+  #   RScript pcaEig_run.R 'path/to/data.csv'  # Pass a CSV file
+  #   RScript pcaEig_run.R 'path/to/data.csv' PCs=c(1,2,3)  # Pass a CSV file with specified PCs
   #
   # Outputs:
   #   - Saves the results as 'pcaEig_r.csv'
