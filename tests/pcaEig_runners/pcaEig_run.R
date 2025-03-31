@@ -41,11 +41,23 @@ pcaEig_run <- function(...) {
   }
 
   # Parse optional arguments
-  args <- list(...)
-  pcs <- args$PCs
-
-  if (is.null(pcs)) {
-    pcs <- 1:ncol(X)  # Default: all PCs
+  args <- commandArgs(trailingOnly = TRUE)
+  if (length(args) > 1) {
+    pcs <- NULL
+    if (length(args) != 3) {
+      stop("Invalid number of arguments. Usage: pcaEig_run(X, PCs)\n")
+    }
+    
+    pcs_values <- args[3]
+    # Check format
+    if (grepl("^[0-9]+:[0-9]+$", pcs_values)) {
+      range_vals <- as.numeric(unlist(strsplit(pcs_values, ":")))
+      pcs <- seq(range_vals[1], range_vals[2]) 
+    } else {
+      pcs <- as.numeric(pcs_values)
+    }
+  } else {
+    pcs <- NULL
   }
 
   # Load the pcaEig function
