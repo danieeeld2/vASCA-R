@@ -87,7 +87,7 @@ function pcaEig_run(varargin)
     model = pcaEig(X, optionalArgs{:});
     
     % Open the CSV file for writing
-    fid = fopen('pcaEig_results.csv', 'w');
+    fid = fopen('pcaEig_matlab.csv', 'w');
     
     % Write header
     fprintf(fid, 'type,value\n');
