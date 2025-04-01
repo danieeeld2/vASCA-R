@@ -65,19 +65,48 @@ vasca <- function(parglmoVS, siglev = 0.01) {
         inds <- inds_ord$x
         ord <- inds_ord$ix
 
-        xf <- vascao$factors[[factor]]$matrix[, inds]
-        model <- pcaEig(xf, PCs = 1:rankMatrix(xf))
-
-        # Copy all fields from model to vascao$factors[[factor]]
-        for (fname in names(model)) {
-          vascao$factors[[factor]][[fname]] <- model[[fname]]
+        # Check the structure of matrix for proper indexing
+        if (is.list(vascao$factors[[factor]]$matrix)) {
+          # If matrix is a list (when nFactors=1)
+          if (length(vascao$factors[[factor]]$matrix) >= max(inds)) {
+            # Create matrix manually by selecting elements from the list
+            mat_cols <- lapply(inds, function(i) vascao$factors[[factor]]$matrix[[i]])
+            xf <- do.call(cbind, mat_cols)
+          } else {
+            # Handle out-of-bounds index case
+            vascao$factors[[factor]]$stasig <- FALSE
+            next
+          }
+        } else {
+          # Use normal indexing if matrix is already a matrix
+          xf <- vascao$factors[[factor]]$matrix[, inds]
         }
+        
+        # Verify xf is valid before proceeding
+        if (!is.null(xf) && ncol(xf) > 0 && nrow(xf) > 0) {
+          model <- pcaEig(xf, PCs = 1:rankMatrix(xf))
+          
+          # Copy all fields from model to vascao$factors[[factor]]
+          for (fname in names(model)) {
+            vascao$factors[[factor]][[fname]] <- model[[fname]]
+          }
 
-        vascao$factors[[factor]]$ind <- ind
-        vascao$factors[[factor]]$scoresV <- (xf + vascao$residuals[, inds]) %*% model$loads
+          vascao$factors[[factor]]$ind <- ind
+          
+          # Handle residuals access in the same way as matrix
+          if (is.list(vascao$residuals)) {
+            res_cols <- lapply(inds, function(i) vascao$residuals[[i]])
+            res_matrix <- do.call(cbind, res_cols)
+            vascao$factors[[factor]]$scoresV <- (xf + res_matrix) %*% model$loads
+          } else {
+            vascao$factors[[factor]]$scoresV <- (xf + vascao$residuals[, inds]) %*% model$loads
+          }
 
-        ord2 <- order(ord)
-        vascao$factors[[factor]]$loadsSorted <- model$loads[ord2, ]
+          ord2 <- order(ord)
+          vascao$factors[[factor]]$loadsSorted <- model$loads[ord2, ]
+        } else {
+          vascao$factors[[factor]]$stasig <- FALSE
+        }
       } else {
         vascao$factors[[factor]]$stasig <- FALSE
       }
@@ -98,24 +127,64 @@ vasca <- function(parglmoVS, siglev = 0.01) {
         inds <- inds_ord$x
         ord <- inds_ord$ix
         
-        xf <- vascao$interactions[[interaction]]$matrix[, inds]
-        
-        for (factor in 1:vascao$interactions[[interaction]]$factors) {
-          xf <- xf + vascao$factors[[factor]]$matrix[, inds]
+        # Check the structure of matrix for proper indexing
+        if (is.list(vascao$interactions[[interaction]]$matrix)) {
+          # If matrix is a list (when nInteractions=1)
+          if (length(vascao$interactions[[interaction]]$matrix) >= max(inds)) {
+            # Create matrix manually by selecting elements from the list
+            mat_cols <- lapply(inds, function(i) vascao$interactions[[interaction]]$matrix[[i]])
+            xf <- do.call(cbind, mat_cols)
+          } else {
+            # Handle out-of-bounds index case
+            vascao$interactions[[interaction]]$stasig <- FALSE
+            next
+          }
+        } else {
+          # Use normal indexing if matrix is already a matrix
+          xf <- vascao$interactions[[interaction]]$matrix[, inds]
         }
         
-        model <- pcaEig(xf, PCs = 1:rankMatrix(xf))
-        
-        # Copy all fields from model to vascao$interactions[[interaction]]
-        for (fname in names(model)) {
-          vascao$interactions[[interaction]][[fname]] <- model[[fname]]
+        # Process contributing factors for this interaction
+        if (vascao$interactions[[interaction]]$factors > 0) {
+          for (factor in 1:vascao$interactions[[interaction]]$factors) {
+            # Check if factor's matrix is a list and handle appropriately
+            if (is.list(vascao$factors[[factor]]$matrix)) {
+              if (length(vascao$factors[[factor]]$matrix) >= max(inds)) {
+                fact_cols <- lapply(inds, function(i) vascao$factors[[factor]]$matrix[[i]])
+                fact_matrix <- do.call(cbind, fact_cols)
+                xf <- xf + fact_matrix
+              }
+            } else {
+              xf <- xf + vascao$factors[[factor]]$matrix[, inds]
+            }
+          }
         }
         
-        vascao$interactions[[interaction]]$ind <- ind
-        vascao$interactions[[interaction]]$scoresV <- (xf + vascao$residuals[, inds]) %*% model$loads
-        
-        ord2 <- order(ord)
-        vascao$interactions[[interaction]]$loadsSorted <- model$loads[ord2, ]
+        # Verify xf is valid before proceeding
+        if (!is.null(xf) && ncol(xf) > 0 && nrow(xf) > 0) {
+          model <- pcaEig(xf, PCs = 1:rankMatrix(xf))
+          
+          # Copy all fields from model to vascao$interactions[[interaction]]
+          for (fname in names(model)) {
+            vascao$interactions[[interaction]][[fname]] <- model[[fname]]
+          }
+          
+          vascao$interactions[[interaction]]$ind <- ind
+          
+          # Handle residuals access in the same way as matrix
+          if (is.list(vascao$residuals)) {
+            res_cols <- lapply(inds, function(i) vascao$residuals[[i]])
+            res_matrix <- do.call(cbind, res_cols)
+            vascao$interactions[[interaction]]$scoresV <- (xf + res_matrix) %*% model$loads
+          } else {
+            vascao$interactions[[interaction]]$scoresV <- (xf + vascao$residuals[, inds]) %*% model$loads
+          }
+          
+          ord2 <- order(ord)
+          vascao$interactions[[interaction]]$loadsSorted <- model$loads[ord2, ]
+        } else {
+          vascao$interactions[[interaction]]$stasig <- FALSE
+        }
       } else {
         vascao$interactions[[interaction]]$stasig <- FALSE
       }
@@ -132,5 +201,9 @@ vasca <- function(parglmoVS, siglev = 0.01) {
 #' @return The rank of the matrix
 #' 
 rankMatrix <- function(X) {
+  # Check for null or empty matrix
+  if (is.null(X) || length(X) == 0) {
+    return(0)
+  }
   return(qr(X)$rank)
 }
