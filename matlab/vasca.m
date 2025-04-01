@@ -142,7 +142,7 @@ function vascao = vasca(parglmoVS,siglev)
             for factor = 1 : vascao.interactions(1).factors
                 xf = xf + vascao.factors(factor).matrix(:,inds);
             end
-            model = pcaEig(xf,1:rank(xf));
+            model = pcaEig(xf,'PCs',1:rank(xf));
         
             fnames = fieldnames(model);
             for n = 1:length(fnames)
