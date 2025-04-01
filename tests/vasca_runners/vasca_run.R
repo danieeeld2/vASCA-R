@@ -37,8 +37,6 @@ vasca_run <- function() {
     
     parglmVS <- fromJSON(parglmVS_path)
     cat("Loaded parglmVS from:", parglmVS_path, "\n")
-
-    print(str(parglmVS))
     
     # Read siglev or use default value
     siglev <- ifelse(length(args) > 1, as.numeric(args[2]), 0.01)
