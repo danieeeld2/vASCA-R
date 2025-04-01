@@ -3,7 +3,6 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"os/exec"
@@ -37,7 +36,7 @@ func runCommand(command string, args ...string) error {
 
 func loadResult(filename string) (Result, error) {
 	var result Result
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename) // Cambio aquí: os.ReadFile en lugar de ioutil.ReadFile
 	if err != nil {
 		return result, err
 	}
@@ -48,7 +47,8 @@ func loadResult(filename string) (Result, error) {
 }
 
 func TestVascaComparison(t *testing.T) {
-	datasets := []string{"../datasets/tests_datasets/parglmVS_1.json", "../datasets/tests_datasets/parglmVS_2.json"}
+	datasets := []string{"../datasets/tests_datasets/parglmVS_1.json", "../datasets/tests_datasets/parglmVS_2.json",
+		"../datasets/tests_datasets/parglmVS_3.json", "../datasets/tests_datasets/parglmVS_4.json"}
 	siglevs := []string{"0.01", "0.05"}
 	tolerance := 1e-6
 
@@ -79,4 +79,8 @@ func TestVascaComparison(t *testing.T) {
 			})
 		}
 	}
+
+	// Clean up generated files
+	os.Remove("vasca_matlab.json")
+	os.Remove("vasca_r.json")
 }
