@@ -16,6 +16,9 @@ RUN apk add --no-cache \
 # Install Octave and gnuplot for plotting support
 RUN apk add --no-cache octave gnuplot
 
+# Install Ghostscript
+RUN apk add --no-cache ghostscript
+
 # Install R
 RUN apk add --no-cache R R-dev R-doc
 
