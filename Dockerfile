@@ -13,8 +13,8 @@ RUN apk add --no-cache \
     g++ \
     libc-dev
 
-# Install Octave
-RUN apk add --no-cache octave
+# Install Octave and gnuplot for plotting support
+RUN apk add --no-cache octave gnuplot
 
 # Install R
 RUN apk add --no-cache R R-dev R-doc
