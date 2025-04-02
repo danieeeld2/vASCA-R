@@ -91,7 +91,7 @@ plotScatter_run <- function(...) {
   options(ggrepel.max.overlaps = Inf)
 
   # Run the plotScatterR function with the data and optional arguments
-  plot_output <- do.call(plotScatterR, c(list(bdata = X), optional_args)) 
+  plot_output <- do.call(plotScatter, c(list(bdata = X), optional_args)) 
 
   # Save the plot as a PNG file
   if (dev.cur() > 1) dev.off()  # Close any open graphics devices
