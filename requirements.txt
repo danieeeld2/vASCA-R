@@ -2,3 +2,4 @@ MASS
 jsonlite
 ggplot2
 ggrepel
+scales
