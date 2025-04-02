@@ -1,2 +1,4 @@
 MASS
 jsonlite
+ggplot2
+ggrepel
