@@ -15,8 +15,12 @@
 #'             ObsClass=c(1,1,1,2,2), 
 #'             XYLabel=c("Y","X"))
 #'
-plotScatter <- function(bdata, ...) {
-  # Check if required packages are available
+plotScatter <- function(bdata, EleLabel = NULL, ObsClass = NULL, XYLabel = c("", ""),
+                        LimCont = NULL, Multiplicity = NULL, Markers = c(20, 50, 100),
+                        BlurIndex = 0.3, Color = NULL, FilledMarkers = FALSE,
+                        PlotMult = "none", ClassType = "default") {
+
+  # Check if required packages are installed and load them
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     install.packages("ggplot2", repos = "https://cran.r-project.org", dependencies = TRUE)
   }
@@ -30,272 +34,238 @@ plotScatter <- function(bdata, ...) {
   library(ggplot2)
   library(ggrepel)
   library(scales)
-  
-  # Parameter checking
-  if (missing(bdata)) {
-    stop("Error in the number of arguments. Parameter 'bdata' is required.")
-  }
-  
-  # Convert bdata to matrix if it's not already
-  if (!is.matrix(bdata) && !is.data.frame(bdata)) {
-    bdata <- as.matrix(bdata)
-  }
-  
-  # Check dimensions
-  if (ncol(bdata) != 2) {
-    stop("Dimension Error: parameter 'bdata' must be N-by-2.")
-  }
-  
-  # Get number of rows
+
   N <- nrow(bdata)
-  
-  # Parse optional parameters
-  params <- list(...)
-  
-  # Set default values for parameters
-  EleLabel <- if ("EleLabel" %in% names(params)) params$EleLabel else 1:N
-  ObsClass <- if ("ObsClass" %in% names(params)) params$ObsClass else rep(1, N)
-  XYLabel <- if ("XYLabel" %in% names(params)) params$XYLabel else c("", "")
-  LimCont <- if ("LimCont" %in% names(params)) params$LimCont else NULL
-  Multiplicity <- if ("Multiplicity" %in% names(params)) params$Multiplicity else rep(1, N)
-  Markers <- if ("Markers" %in% names(params)) params$Markers else c(20, 50, 100)
-  BlurIndex <- if ("BlurIndex" %in% names(params)) params$BlurIndex else 0.3
-  Color <- if ("Color" %in% names(params)) params$Color else NULL
-  FilledMarkers <- if ("FilledMarkers" %in% names(params)) params$FilledMarkers else FALSE
-  PlotMult <- if ("PlotMult" %in% names(params)) params$PlotMult else "none"
-  ClassType <- if ("ClassType" %in% names(params)) params$ClassType else "default"
-  
-  # Check dimensions and convert types as needed
-  if (length(EleLabel) == 1 && EleLabel[1] == 1 && length(EleLabel) != N) {
+
+  # Handle default values
+  if (is.null(EleLabel)) {
     EleLabel <- 1:N
   }
-  if (length(ObsClass) == 1 && ObsClass[1] == 1 && length(ObsClass) != N) {
+  if (is.null(ObsClass)) {
     ObsClass <- rep(1, N)
   }
-  if (length(Multiplicity) == 1 && Multiplicity[1] == 1 && length(Multiplicity) != N) {
+  if (is.null(Multiplicity)) {
     Multiplicity <- rep(1, N)
   }
-  
-  # Convert row vectors to column vectors
-  if (is.matrix(EleLabel) && nrow(EleLabel) == 1) {
-    EleLabel <- t(EleLabel)
+
+  # Convert to column vectors if necessary
+  if (is.vector(EleLabel)) {
+    EleLabel <- as.vector(EleLabel)
   }
-  if (is.matrix(ObsClass) && nrow(ObsClass) == 1) {
-    ObsClass <- t(ObsClass)
+  if (is.vector(ObsClass)) {
+    ObsClass <- as.vector(ObsClass)
   }
-  if (is.matrix(Multiplicity) && nrow(Multiplicity) == 1) {
-    Multiplicity <- t(Multiplicity)
+  if (is.vector(Multiplicity)) {
+    Multiplicity <- as.vector(Multiplicity)
   }
-  
-  # Convert single values to vectors if needed
-  if (length(EleLabel) == 1 && N > 1) {
-    EleLabel <- rep(EleLabel, N)
+  if (is.vector(Markers)) {
+    Markers <- as.vector(Markers)
   }
-  if (length(ObsClass) == 1 && N > 1) {
-    ObsClass <- rep(ObsClass, N)
+  if (is.vector(BlurIndex)) {
+    BlurIndex <- as.numeric(BlurIndex)
   }
-  if (length(Multiplicity) == 1 && N > 1) {
-    Multiplicity <- rep(Multiplicity, N)
+
+  # Check type of plot
+  if (PlotMult == "none") {
+    opt <- ifelse(FilledMarkers, "010", "000")
+  } else if (PlotMult == "size") {
+    opt <- "100"
+  } else if (PlotMult == "shape") {
+    opt <- "101"
+  } else if (PlotMult == "zaxis") {
+    opt <- "110"
+  } else if (PlotMult == "zsize") {
+    opt <- "111"
+  } else {
+    stop("ValueError: invalid value for parameter 'PlotMult'.")
   }
-  
-  # Determine class type
-  if (ClassType == "default") {
+
+  # Check type of class
+  if (ClassType == "Numerical") {
+    opt <- paste0("0", opt)
+  } else if (ClassType == "Categorical") {
+    opt <- paste0("1", opt)
+  } else if (ClassType == "default") {
     if (!is.numeric(ObsClass) || length(unique(ObsClass)) < 10) {
-      ClassType <- "Categorical"
+      opt <- paste0("1", opt)
     } else {
-      ClassType <- "Numerical"
+      opt <- paste0("0", opt)
     }
+  } else {
+    stop("ValueError: parameter 'ClassType' must contain either 'Numerical' or 'Categorical'.")
   }
-  
-  # Convert to characters if needed
+
+  # Convert num arrays to str
   if (!is.null(EleLabel) && is.numeric(EleLabel)) {
     EleLabel <- as.character(EleLabel)
   }
-  if (!is.null(ObsClass) && is.numeric(ObsClass) && ClassType == "Categorical") {
+  if (!is.null(ObsClass) && is.numeric(ObsClass) && substr(opt, 1, 1) == "1") {
     ObsClass <- as.character(ObsClass)
   }
-  
-  # Create a data frame for plotting
-  plot_data <- data.frame(
-    x = bdata[, 1],
-    y = bdata[, 2],
-    class = ObsClass,
-    label = EleLabel,
-    mult = Multiplicity
-  )
-  
-  # Sort data for colorbar if numerical classes
-  if (ClassType == "Numerical" && is.numeric(ObsClass)) {
-    plot_data <- plot_data[order(plot_data$class), ]
+
+  # Validate dimensions of input data
+  stopifnot(ncol(bdata) == 2)
+  if (!is.null(EleLabel)) {
+    stopifnot(length(EleLabel) == N || length(EleLabel) == N + 1)
   }
-  
-  # Set up the plot
-  p <- ggplot(plot_data, aes(x = x, y = y))
-  
-  # Define bin thresholds for multiplicity
-  bins <- c(0, 1, Markers, Inf)
-  
-  # Define base styling
-  p <- p + theme_bw() +
-    theme(
-      axis.title = element_text(size = 18),
-      axis.text = element_text(size = 14),
-      legend.title = element_text(size = 14),
-      legend.text = element_text(size = 12),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank()
-    )
-  
-  # Add origin lines
-  p <- p + 
-    geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-    geom_vline(xintercept = 0, linetype = "dashed", color = "black")
-  
-  # Get unique classes
-  unique_classes <- unique(ObsClass)
-  n_classes <- length(unique_classes)
-  
-  # Set color palette
-  if (is.null(Color)) {
-    if (ClassType == "Categorical") {
-      if (n_classes == 1) {
-        color_values <- scales::hue_pal()(1)
-      } else if (n_classes <= 8) {
-        color_values <- okabe_ito_hex(n_classes)
-      } else {
-        color_values <- scales::hue_pal()(n_classes)
-      }
-    } else {
-      color_values <- scales::viridis_pal(option = "plasma")(n_classes)
-    }
-  } else {
-    if (Color == "hsv") {
-      color_values <- scales::hue_pal()(n_classes)
-    } else if (Color == "parula") {
-      color_values <- scales::viridis_pal(option = "plasma")(n_classes)
-    } else if (Color == "okabeIto") {
-      color_values <- okabe_ito_hex(n_classes)
-    } else {
-      # Default to hsv if unrecognized
-      color_values <- scales::hue_pal()(n_classes)
-    }
+  if (!is.null(ObsClass)) {
+    stopifnot(length(ObsClass) == N || length(ObsClass) == N + 1)
   }
-  
-  # Add points based on PlotMult parameter
-  if (PlotMult == "none") {
-    if (ClassType == "Categorical") {
-      p <- p + geom_point(aes(color = factor(class)), 
-                         fill = if(FilledMarkers) NA else "white",
-                         shape = if(FilledMarkers) 19 else 1)
-      p <- p + scale_color_manual(values = color_values, name = "Class")
-    } else {
-      p <- p + geom_point(aes(color = class),
-                         fill = if(FilledMarkers) NA else "white",
-                         shape = if(FilledMarkers) 19 else 1)
-      p <- p + scale_color_gradientn(colors = color_values, name = "Class")
-    }
-  } else if (PlotMult == "size") {
-    if (ClassType == "Categorical") {
-      p <- p + geom_point(aes(color = factor(class), size = mult), fill = NA)
-      p <- p + scale_color_manual(values = color_values, name = "Class")
-    } else {
-      p <- p + geom_point(aes(color = class, size = mult), fill = NA)
-      p <- p + scale_color_gradientn(colors = color_values, name = "Class")
-    }
-    p <- p + scale_size_continuous(name = "Multiplicity", range = c(2, 15))
-  } else if (PlotMult == "shape") {
-    # Create multiplicity categories
-    plot_data$mult_cat <- cut(plot_data$mult, 
-                              breaks = c(-Inf, 1, Markers, Inf),
-                              labels = c("≤ 1", "≤ 20", "≤ 50", "≤ 100", "> 100"))
-    
-    if (ClassType == "Categorical") {
-      p <- p + geom_point(data = plot_data, 
-                        aes(color = factor(class), shape = mult_cat), 
-                        size = 3, fill = NA)
-      p <- p + scale_color_manual(values = color_values, name = "Class")
-    } else {
-      p <- p + geom_point(data = plot_data, 
-                        aes(color = class, shape = mult_cat), 
-                        size = 3, fill = NA)
-      p <- p + scale_color_gradientn(colors = color_values, name = "Class")
-    }
-    p <- p + scale_shape_manual(values = c(3, 4, 5, 1, 2), name = "Multiplicity")
-  } else if (PlotMult == "zaxis") {
-    # In 2D we'll use transparency for z-axis representation
-    if (ClassType == "Categorical") {
-      p <- p + geom_point(aes(color = factor(class), alpha = mult), size = 3)
-      p <- p + scale_color_manual(values = color_values, name = "Class")
-    } else {
-      p <- p + geom_point(aes(color = class, alpha = mult), size = 3)
-      p <- p + scale_color_gradientn(colors = color_values, name = "Class")
-    }
-    p <- p + scale_alpha_continuous(name = "Multiplicity (Z)")
-  } else if (PlotMult == "zsize") {
-    # Use both size and transparency
-    if (ClassType == "Categorical") {
-      p <- p + geom_point(aes(color = factor(class), size = mult, alpha = as.numeric(factor(class))), fill = NA)
-      p <- p + scale_color_manual(values = color_values, name = "Class (Z)")
-    } else {
-      p <- p + geom_point(aes(color = class, size = mult, alpha = class), fill = NA)
-      p <- p + scale_color_gradientn(colors = color_values, name = "Class (Z)")
-    }
-    p <- p + scale_size_continuous(name = "Multiplicity", range = c(2, 15))
-    p <- p + scale_alpha_continuous(name = "Z-axis", range = c(0.3, 1))
-  }
-  
-  # Add labels using the text_scatter_ggplot function
-  # Use only the repelling label functionality from this function
-  p <- p + geom_text_repel(
-    aes(label = label),
-    size = 3,
-    box.padding = 0.5,
-    point.padding = 0.1,
-    force = 10 * (1 - BlurIndex),
-    max.overlaps = round(N * BlurIndex),
-    segment.color = "gray50"
-  )
-  
-  # Add control limits if specified
+  stopifnot(length(XYLabel) == 2)
   if (!is.null(LimCont)) {
-    # X limits
-    if (!is.null(LimCont[[1]]) && length(LimCont[[1]]) > 0) {
-      for (lim in LimCont[[1]]) {
-        p <- p + geom_vline(xintercept = lim, linetype = "dashed", color = "red", size = 1)
-      }
-    }
-    
-    # Y limits
-    if (!is.null(LimCont[[2]]) && length(LimCont[[2]]) > 0) {
-      for (lim in LimCont[[2]]) {
-        p <- p + geom_hline(yintercept = lim, linetype = "dashed", color = "red", size = 1)
-      }
-    }
+    stopifnot(is.list(LimCont) && length(LimCont) == 2)
   }
-  
-  # Add axis labels
-  if (!is.null(XYLabel) && length(XYLabel) >= 2) {
-    p <- p + labs(x = XYLabel[1], y = XYLabel[2])
+  if (!is.null(Multiplicity)) {
+    stopifnot(length(Multiplicity) == N)
   }
-  
-  # Legend placement
-  if (n_classes < 2) {
-    p <- p + theme(legend.position = "none")
+  if (!is.null(Markers)) {
+    stopifnot(length(Markers) == 3)
+  }
+  stopifnot(length(BlurIndex) == 1)
+
+  # Create data frame for ggplot
+  df <- as.data.frame(bdata)
+  colnames(df) <- c("x", "y")
+  df$EleLabel <- EleLabel
+  df$ObsClass <- ObsClass
+  df$Multiplicity <- Multiplicity
+
+  # Sort data for colorbar
+  if (substr(opt, 1, 1) == "0") {
+    if (is.factor(df$ObsClass)) {
+      df <- df[order(as.numeric(df$ObsClass)), ]
+    } else if (is.character(df$ObsClass)) {
+      df <- df[order(as.numeric(df$ObsClass)), ]
+    } else {
+      df <- df[order(df$ObsClass), ]
+    }
+    cax <- range(as.numeric(df$ObsClass))
+  }
+
+  # Get ordering of classes
+  unique_classes <- unique(df$ObsClass)
+  if (is.factor(df$ObsClass)) {
+    df$ordClasses <- as.numeric(df$ObsClass)
   } else {
-    p <- p + theme(legend.position = "right")
+    df$ordClasses <- factor(df$ObsClass, levels = unique_classes)
   }
-  
-  # Return the plot
+  unique_ord_classes <- unique(df$ordClasses)
+
+  # Define mult bins, markers, colors and sizes
+  bins <- c(0, 1, Markers, Inf)
+  markers <- c(24, 25, 23, 21, 22) # Corresponding to ^, v, d, o, s in R (filled)
+
+  n_elems <- length(unique_ord_classes)
+
+  # Define color palette
+  if (is.null(Color)) {
+    if (substr(opt, 1, 1) == "1") {
+      if (n_elems == 1) {
+        color_palette <- grDevices::hsv(h = 0.6, s = 1, v = 1) # Similar to winter(1)
+      } else if (n_elems <= 8) {
+        color_palette <- okabe_ito_hex(n_elems)
+      } else {
+        color_palette <- grDevices::hsv(seq(0, 1, length.out = n_elems)) # Similar to hsv
+      }
+    } else {
+      color_palette <- viridis::viridis(n_elems) # Similar to parula
+    }
+  } else {
+    if (Color == 'hsv') {
+      color_palette <- grDevices::hsv(seq(0, 1, length.out = n_elems))
+    } else if (Color == 'parula') {
+      color_palette <- viridis::viridis(n_elems)
+    } else if (Color == 'okabeIto') {
+      color_palette <- okabe_ito_hex(n_elems)
+    } else {
+      stop(paste("Color palette '", Color, "' not recognized."))
+    }
+  }
+
+  color_scale <- scale_color_manual(values = color_palette, name = "ObsClass")
+
+  sizes <- ifelse(df$Multiplicity > bins[4], 2.5 * 4^2 * pi,
+                  ifelse(df$Multiplicity > bins[3], 2.5 * 3^2 * pi,
+                         ifelse(df$Multiplicity > bins[2], 2.5 * 2^2 * pi,
+                                ifelse(df$Multiplicity > bins[1], 2.5 * 1^2 * pi, 0))))
+
+
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = y)) +
+    ggplot2::theme_bw()
+
+  switch(substr(opt, 2, 4),
+         "000" = { # 2D plot, No multiplicity info, filled marks
+           p <- p + ggplot2::geom_point(ggplot2::aes(color = ordClasses), size = 3)
+         },
+         "010" = { # 2D plot, No multiplicity info, empty marks
+           p <- p + ggplot2::geom_point(ggplot2::aes(color = ordClasses), shape = 1, size = 3)
+         },
+         "100" = { # 2D plot, Multiplicity in size
+           p <- p + ggplot2::geom_point(ggplot2::aes(color = ordClasses, size = Multiplicity))
+         },
+         "101" = { # 2D plot, Multiplicity in markers
+           df$mult_group <- cut(df$Multiplicity, breaks = bins, labels = FALSE, include.lowest = TRUE, right = FALSE)
+           p <- p + ggplot2::geom_point(ggplot2::aes(color = ordClasses, shape = factor(mult_group)), size = 3) +
+             ggplot2::scale_shape_manual(values = markers[1:length(unique(df$mult_group))], name = "Multiplicity")
+         },
+         "110" = { # 3D plot, Multiplicity in Z-axis (represented by color gradient)
+           p <- p + ggplot2::geom_point(ggplot2::aes(color = ordClasses, alpha = Multiplicity / max(Multiplicity)), size = 3) +
+             ggplot2::scale_alpha_continuous(name = "Multiplicity")
+         },
+         "111" = { # 3D plot, Multiplicity in size, classes in Z-axis (not directly representable in 2D ggplot)
+           p <- p + ggplot2::geom_point(ggplot2::aes(color = ordClasses, size = Multiplicity), alpha = 0.7)
+         }
+  )
+
+  p <- p + color_scale +
+    ggplot2::labs(x = XYLabel[1], y = XYLabel[2]) +
+    ggplot2::theme(legend.position = "right",
+                   axis.text = ggplot2::element_text(size = 14),
+                   axis.title = ggplot2::element_text(size = 18),
+                   legend.text = ggplot2::element_text(size = 12),
+                   legend.title = ggplot2::element_text(size = 14))
+
+  # Add labels using textScatterR
+  if (!is.null(EleLabel)) {
+    p <- text_scatter_ggplot(data = df[, c("x", "y", "EleLabel", "ObsClass", "Multiplicity")],
+                               x_col = "x", y_col = "y", ele_label = df$EleLabel,
+                               obs_class = df$ObsClass, plot_mult = PlotMult,
+                               multiplicity = df$Multiplicity, blur_index = BlurIndex) +
+      ggplot2::labs(x = XYLabel[1], y = XYLabel[2]) +
+      ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
+                     panel.grid.minor = ggplot2::element_blank()) # Remove default ggplot grid for cleaner look with text_scatter
+  }
+
+
+  # Plot control limits
+  if (!is.null(LimCont)) {
+    if (!is.null(LimCont[[1]])) {
+      for (limit in LimCont[[1]]) {
+        p <- p + ggplot2::geom_vline(xintercept = limit, linetype = "dashed", color = "red")
+      }
+    }
+    if (!is.null(LimCont[[2]])) {
+      for (limit in LimCont[[2]]) {
+        p <- p + ggplot2::geom_hline(yintercept = limit, linetype = "dashed", color = "red")
+      }
+    }
+  } else {
+    p <- p + ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+      ggplot2::geom_vline(xintercept = 0, linetype = "dashed", color = "black")
+  }
+
+  # Set color axis for numerical classes
+  if (substr(opt, 1, 1) == "0") {
+    if (length(unique(df$ObsClass)) < 2) {
+      p <- p + ggplot2::scale_color_discrete(guide = "none")
+    } else {
+      p <- p + ggplot2::scale_color_viridis_d(name = "ObsClass") # Using viridis for numerical
+    }
+  } else {
+    if (length(unique(df$ObsClass)) < 2) {
+      p <- p + ggplot2::scale_color_discrete(guide = "none")
+    }
+  }
+
   return(p)
 }
-
-# Demonstration
-p <- plotScatter(matrix(rnorm(10), ncol=2),
-           EleLabel=c("uno","dos","tres","cuatro","cinco"),
-           ObsClass=c(1,1,1,2,2),
-           XYLabel=c("Y","X"),
-           Multiplicity=c(1,20,50,100,5),
-           PlotMult="size")
-
-# Print the plot
-print(p)
