@@ -113,3 +113,17 @@ text_scatter_ggplot <- function(data, x_col = 1, y_col = 2, ele_label = NULL,
   
   return(p)
 }
+
+# Demo of text_scatter_ggplot function
+X <- data.frame(x = rnorm(100), y = rnorm(100))
+EleLabel <- paste("Point", 1:100)
+ObsClass <- sample(1:3, 100, replace = TRUE)
+Multiplicity <- sample(1:5, 100, replace = TRUE)
+BlurIndex <- 0.3
+plot_mult <- "size"
+p <- text_scatter_ggplot(X, ele_label = EleLabel, obs_class = ObsClass, 
+                           plot_mult = plot_mult, multiplicity = Multiplicity, 
+                           blur_index = BlurIndex)
+
+
+
