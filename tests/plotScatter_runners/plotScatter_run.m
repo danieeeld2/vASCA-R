@@ -68,15 +68,38 @@ function plotScatter_run(varargin)
         X = eval(argX);
     end
 
-    optionalArgs = {};
-    if numel(args) > 1
-        optionalArgs = args(2:end);
+    % Initialize optional parameters
+    params = {};
+
+    % Process optional parameters if provided
+    if length(args) > 1
+        i = 2;
+        while i <= length(args)
+            paramName = args{i};
+            if i + 1 <= length(args)
+                paramValue = args{i + 1};
+                % Try to evaluate expressions instead of just converting numbers
+                try
+                    paramValue = eval(paramValue);
+                catch
+                    if strcmpi(paramValue, 'true')
+                        paramValue = true;
+                    elseif strcmpi(paramValue, 'false')
+                        paramValue = false;
+                    end
+                end
+                params = [params, paramName, paramValue];
+                i = i + 2;
+            else
+                error('Parameter %s has no assigned value.', paramName);
+            end
+        end
     end
 
     addpath('../matlab');
 
     figure;
-    plotScatter(X, optionalArgs{:});
+    plotScatter(X, params{:});
     saveas(gcf, 'plotScatter_matlab.png');
     close;
 end
