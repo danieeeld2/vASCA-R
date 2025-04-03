@@ -28,7 +28,7 @@ func runPlotScatter(script string, args ...string) error {
 	return nil
 }
 
-func generateComparisonHTML(testCases []struct {
+func generateComparisonMarkdown(testCases []struct {
 	name       string
 	rData      string
 	octaveData string
@@ -37,65 +37,9 @@ func generateComparisonHTML(testCases []struct {
 	skipR      bool
 	skipOctave bool
 }, outputDir string) error {
-	htmlContent := `
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<title>MATLAB vs R Scatter Plot Comparison</title>
-		<style>
-			body { font-family: Arial, sans-serif; margin: 20px; }
-			h1 { color: #333; text-align: center; }
-			.test-case { 
-				margin-bottom: 40px; 
-				padding: 20px; 
-				background: #f9f9f9; 
-				border-radius: 8px;
-				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-			}
-			h2 { color: #444; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
-			.comparison { 
-				display: flex; 
-				justify-content: center;
-				flex-wrap: wrap;
-				gap: 20px;
-				margin-top: 15px;
-			}
-			.image-container { 
-				text-align: center; 
-				padding: 10px;
-				background: white;
-				border-radius: 5px;
-				box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-			}
-			img { 
-				max-width: 450px; 
-				height: auto;
-				border: 1px solid #eee;
-			}
-			.caption { 
-				font-weight: bold; 
-				margin-top: 8px;
-				color: #555;
-			}
-			.metadata {
-				background: #f0f0f0;
-				padding: 10px;
-				border-radius: 5px;
-				margin-top: 15px;
-				font-family: monospace;
-				font-size: 0.9em;
-			}
-			footer {
-				text-align: center;
-				margin-top: 30px;
-				color: #777;
-				font-size: 0.9em;
-			}
-		</style>
-	</head>
-	<body>
-		<h1>Scatter Plot Comparison: MATLAB vs R</h1>
-	`
+	mdContent := "# Scatter Plot Comparison: MATLAB vs R\n\n"
+	mdContent += fmt.Sprintf("**Generated at**: %s  \n", time.Now().Format("2006-01-02 15:04:05"))
+	mdContent += fmt.Sprintf("**Test Results**  \n\n")
 
 	for _, tc := range testCases {
 		if tc.skipR || tc.skipOctave {
@@ -106,37 +50,21 @@ func generateComparisonHTML(testCases []struct {
 		rCmd := strings.Join(append([]string{"Rscript", "./plotScatter_runners/plotScatter_run.R", tc.rData}, tc.rArgs...), " ")
 		octaveCmd := strings.Join(append([]string{"octave", "--no-gui", "-q", "./plotScatter_runners/plotScatter_run.m", tc.octaveData}, tc.octaveArgs...), " ")
 
-		htmlContent += fmt.Sprintf(`
-		<div class="test-case">
-			<h2>%s</h2>
-			<div class="comparison">
-				<div class="image-container">
-					<img src="plotScatter_matlab_%s.png" alt="MATLAB output">
-					<div class="caption">MATLAB</div>
-				</div>
-				<div class="image-container">
-					<img src="plotScatter_r_%s.png" alt="R output">
-					<div class="caption">R</div>
-				</div>
-			</div>
-			<div class="metadata">
-				<p><strong>R Command:</strong> %s</p>
-				<p><strong>MATLAB Command:</strong> %s</p>
-			</div>
-		</div>
-		`, tc.name, safeName, safeName, rCmd, octaveCmd)
+		mdContent += fmt.Sprintf("## %s\n\n", tc.name)
+		mdContent += "| MATLAB | R |\n"
+		mdContent += "|--------|---|\n"
+		mdContent += fmt.Sprintf("| ![MATLAB Plot](plotScatter_matlab_%s.png) | ![R Plot](plotScatter_r_%s.png) |\n\n", safeName, safeName)
+
+		mdContent += "### Commands\n"
+		mdContent += "```bash\n"
+		mdContent += fmt.Sprintf("# R Command\n%s\n\n", rCmd)
+		mdContent += fmt.Sprintf("# MATLAB Command\n%s\n", octaveCmd)
+		mdContent += "```\n\n"
+		mdContent += "---\n\n"
 	}
 
-	htmlContent += fmt.Sprintf(`
-		<footer>
-			Generated at %s | plotScatter_test_results
-		</footer>
-	</body>
-	</html>
-	`, time.Now().Format("2006-01-02 15:04:05"))
-
-	// Create HTML file in the output directory
-	return os.WriteFile(filepath.Join(outputDir, "plotScatter_comparison.html"), []byte(htmlContent), 0644)
+	mdPath := filepath.Join(outputDir, "RESULTS.md")
+	return os.WriteFile(mdPath, []byte(mdContent), 0644)
 }
 
 func TestPlotScatterBasic(t *testing.T) {
@@ -198,9 +126,9 @@ func TestPlotScatterBasic(t *testing.T) {
 		},
 	}
 
-	// Create single output directory
+	// Create output directory
 	outputDir := "plotScatter_test_results"
-	if err := os.MkdirAll(outputDir, 0777); err != nil {
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
@@ -240,10 +168,11 @@ func TestPlotScatterBasic(t *testing.T) {
 		})
 	}
 
-	// Generate comparison report in the same directory
-	if err := generateComparisonHTML(tests, outputDir); err != nil {
+	// Generate comparison markdown report
+	if err := generateComparisonMarkdown(tests, outputDir); err != nil {
 		t.Errorf("Failed to generate comparison report: %v", err)
 	} else {
-		t.Logf("Comparison report generated: %s/plotScatter_comparison.html", outputDir)
+		t.Logf("Markdown report generated: %s/RESULTS.md", outputDir)
+		t.Log("GitHub will automatically render this Markdown file with images")
 	}
 }
