@@ -11,7 +11,14 @@ RUN apk add --no-cache \
     make \
     gcc \
     g++ \
-    libc-dev
+    libc-dev \
+    libpng-dev \
+    freetype-dev \
+    tiff-dev \
+    jpeg-dev \
+    fontconfig \
+    freetype-dev \
+    font-dejavu 
 
 # Install Octave and gnuplot for plotting support
 RUN apk add --no-cache octave gnuplot
