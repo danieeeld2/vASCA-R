@@ -1,7 +1,7 @@
-#' Vector Plotting Function (R version of MATLAB's plotVec with improved axis labels)
+#' Vector Plotting Function (R version of MATLAB's plotVec with improved axis labels and thinner lines)
 #'
 #' Creates bar or line plots for vectors with optional grouping, labels, and control limits.
-#' Includes improved handling of crowded axis labels.
+#' Includes improved handling of crowded axis labels and thinner lines for line plots.
 #'
 #' @param vec Matrix or data frame of vectors to plot (N rows x M columns)
 #' @param EleLabel Names of the vector elements (default is row numbers)
@@ -15,6 +15,8 @@
 #' @param Markers Thresholds for marker sizes (default c(20, 50, 100))
 #' @param Color Color palette: "hsv", "parula", or "okabeIto" (default)
 #' @param max_x_labels Maximum number of labels to show on x-axis (default 20)
+#' @param line_width Line width for line plots (default 0.5)
+#' @param point_size Point size for line plots (default 1.5)
 #'
 #' @return ggplot object containing the plot
 #'
@@ -22,11 +24,12 @@
 #' # Basic bar plot
 #' plotVec(matrix(rnorm(100), ncol=1))
 #'
-#' # Line plot with control limits and limited x labels
-#' plotVec(matrix(rnorm(300), ncol=3), PlotType="Lines", LimCont=c(1,-1,3), max_x_labels=10)
+#' # Line plot with thinner lines
+#' plotVec(matrix(rnorm(300), ncol=3), PlotType="Lines", LimCont=c(1,-1,3))
 plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NULL,
                      PlotType="Bars", ClassType="default", VecLabel=NULL,
-                     Multiplicity=NULL, Markers=c(20,50,100), Color=NULL, max_x_labels=20) {
+                     Multiplicity=NULL, Markers=c(20,50,100), Color=NULL, max_x_labels=20,
+                     line_width=0.5, point_size=1.5) {
   
   # Load required packages
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
@@ -41,18 +44,7 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
                        "#2EB7A4", "#87BF77", "#D1BB59", "#FEC832", "#F9FB0E"))(n)
   }
   
-  # Okabe-Ito colorblind friendly palette
-  okabe_ito_hex <- function(n) {
-    colors <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", 
-                "#0072B2", "#D55E00", "#CC79A7", "#000000")
-    if (n <= length(colors)) {
-      return(colors[1:n])
-    } else {
-      # If more colors needed, recycle with slight variations
-      return(colorRampPalette(colors)(n))
-    }
-  }
-  
+
   # Convert input to matrix if needed
   if (!is.matrix(vec)) vec <- as.matrix(vec)
   # Handle single row vectors
@@ -165,18 +157,18 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
         p <- p + geom_col(aes(fill = VariableLabel), position = position_dodge2(preserve = "single"), width = 0.8)
         p <- p + scale_fill_manual(values = colors[1:M])
       }
-    } else { # Lines
+    } else {
       if (nClasses > 1) {
         # Group by class
         p <- p + geom_line(aes(color = Class, group = interaction(Class, Variable)), 
-                          linewidth = 0.75 + 1/M) +
-                 geom_point(aes(color = Class), size = 3)
+                          linewidth = line_width) +
+                 geom_point(aes(color = Class), size = point_size)
         p <- p + scale_color_manual(values = colors[1:nClasses])
       } else {
         # Group by variable
         p <- p + geom_line(aes(color = VariableLabel, group = Variable), 
-                          linewidth = 0.75 + 1/M) +
-                 geom_point(aes(color = VariableLabel), size = 3)
+                          linewidth = line_width) +
+                 geom_point(aes(color = VariableLabel), size = point_size)
         p <- p + scale_color_manual(values = colors[1:M])
       }
     }
@@ -184,10 +176,10 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     if (PlotType == "Bars") {
       p <- p + geom_col(aes(fill = NumericClass), position = position_dodge2(preserve = "single"), width = 0.8)
       p <- p + scale_fill_gradientn(colors = colors)
-    } else { # Lines
+    } else { 
       p <- p + geom_line(aes(color = NumericClass, group = Variable), 
-                        linewidth = 0.75 + 1/M) +
-               geom_point(aes(color = NumericClass), size = 3)
+                        linewidth = line_width) +
+               geom_point(aes(color = NumericClass), size = point_size)
       p <- p + scale_color_gradientn(colors = colors)
     }
   }
@@ -197,7 +189,7 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     if (length(LimCont) == 1) {
       # Single control limit
       p <- p + geom_hline(yintercept = LimCont, color = "red", 
-                         linetype = "dashed", linewidth = 1)
+                         linetype = "dashed", linewidth = 0.8)  
     } else if (length(LimCont) == N) {
       # Variable control limits
       limit_data <- data.frame(
@@ -205,16 +197,17 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
         y = LimCont
       )
       p <- p + geom_line(data = limit_data, aes(x = x, y = y), 
-                        color = "red", linetype = "dashed", linewidth = 1)
+                        color = "red", linetype = "dashed", linewidth = 0.8)  
     } else if (length(LimCont) > 1 && length(LimCont) < N) {
       # Multiple constant control limits
       for (lim in LimCont) {
         p <- p + geom_hline(yintercept = lim, color = "red", 
-                           linetype = "dashed", linewidth = 1)
+                           linetype = "dashed", linewidth = 0.8) 
       }
     }
   }
   
+  # IMPROVED X-AXIS LABEL HANDLING
   # Calculate how many labels to skip for readability
   if (N > max_x_labels) {
     step_size <- ceiling(N / max_x_labels)
