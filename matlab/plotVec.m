@@ -256,7 +256,11 @@ if(isempty(color))
             colorList = colormap(hsv(nElems));
         end
     else
-        colorList = colormap(parula(nElems));
+        if isoctave()
+            colorList = colormap(jet(nElems));
+        else
+            colorList = colormap(parula(nElems));
+        end
     end  
 else
     colorList = eval(sprintf('colormap(%s(nElems))',color));
@@ -376,7 +380,9 @@ hold off
 
 end
 
-
+function tf = isoctave()
+    tf = exist('OCTAVE_VERSION', 'builtin') ~= 0;
+end
 
 
 
