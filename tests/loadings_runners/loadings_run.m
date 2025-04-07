@@ -106,7 +106,21 @@ function loadings_run(varargin)
                 error('Parameter %s needs a value', args{i});
             end
             params{end+1} = args{i};
-            params{end+1} = args{i+1};
+            param_value = args{i+1};
+            if ischar(param_value)
+                if (startsWith(param_value, '{') && endsWith(param_value, '}')) || ...
+                (startsWith(param_value, '[') && endsWith(param_value, ']'))
+                    try
+                        evaluated_value = eval(param_value);
+                        param_value = evaluated_value;
+                    catch
+                        fprintf('Warning: Could not evaluate parameter %s value: %s\n', args{i}, param_value);
+                    end
+                end
+            end
+            
+            % Guardar el valor procesado
+            params{end+1} = param_value;
         end
     end
 

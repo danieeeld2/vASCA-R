@@ -116,7 +116,7 @@ loadings_run <- function(...) {
             param_value <- as.numeric(param_value)
         } else if (param_value == "TRUE" || param_value == "FALSE") {
             param_value <- as.logical(param_value)
-        } else if (grepl("^\\[.*\\]$", param_value)) {
+        } else if (grepl("^\\[.*\\]$|^c\\(.*\\)$", param_value)) {
             # Handle array parameters 
             param_value <- eval(parse(text = param_value))
         }
@@ -139,7 +139,7 @@ loadings_run <- function(...) {
             param_value <- as.numeric(param_value)
         } else if (param_value == "TRUE" || param_value == "FALSE") {
             param_value <- as.logical(param_value)
-        } else if (grepl("^\\[.*\\]$", param_value)) {
+        } else if (grepl("^\\[.*\\]$|^c\\(.*\\)$", param_value)) {
             # Handle array parameters - simplified version
             param_value <- eval(parse(text = param_value))
         }
