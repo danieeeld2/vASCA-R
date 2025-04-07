@@ -218,11 +218,11 @@ plotScatter <- function(bdata, EleLabel = NULL, ObsClass = NULL, XYLabel = c("",
       } else if (n_elems <= 8) {
         color_palette <- okabe_ito_hex(n_elems)
       } else {
-        color_palette <- grDevices::hsv(seq(0, 1, length.out = n_elems))
+        color_palette <- grDevices::hsv(h = seq(0, 1, length.out = n_elems + 1)[1:n_elems], s = 1, v = 1)
       }
     } else {
       if (Color == 'hsv') {
-        color_palette <- grDevices::hsv(seq(0, 1, length.out = n_elems))
+        color_palette <- grDevices::hsv(h = seq(0, 1, length.out = n_elems + 1)[1:n_elems], s = 1, v = 1)
       } else if (Color == 'parula') {
         color_palette <- viridis::viridis(n_elems)
       } else if (Color == 'okabeIto') {
