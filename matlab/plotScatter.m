@@ -270,7 +270,8 @@ if(isempty(color))
         end
     end  
 else
-    eval(sprintf('colormap(%s(nElems))',color));
+    color_name = strrep(color, '''', '');
+    eval(sprintf('colormap(%s(nElems))',color_name));
 end
 
 colorList = colormap();
