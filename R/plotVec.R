@@ -95,21 +95,33 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
   
   # Base plot
   p <- ggplot(plot_data, aes(x = Element, y = Value))
-  
+
   # Add multiplicity indicators (similar to MATLAB's approach)
   if (!all(Multiplicity == 1)) {
     # Create bins according to markers
     bins <- c(0, 1, Markers, Inf)
-    sizes <- 2 * sqrt(1:length(bins))
+    
+    # Calculate sizes exactly as MATLAB does
+    sizes <- numeric(length(bins)-1)
+    for (i in 1:(length(bins)-1)) {
+      sizes[i] <- round(0.5 * i^2 * pi)
+    }
     
     for (i in 1:(length(bins)-1)) {
-      mult_data <- plot_data[plot_data$Multiplicity > bins[i] & 
-                             plot_data$Multiplicity <= bins[i+1] & 
-                             !duplicated(plot_data$Element), ]
-      if (nrow(mult_data) > 0) {
-        p <- p + geom_point(data = mult_data, 
-                           aes(x = Element, y = 0),
-                           shape = 21, fill = "black", size = sizes[i])
+      elements_in_bin <- which(Multiplicity > bins[i] & Multiplicity <= bins[i+1])
+      
+      if (length(elements_in_bin) > 0) {
+        bin_data <- data.frame(
+          x = elements_in_bin,
+          y = rep(0, length(elements_in_bin))
+        )
+        
+        p <- p + geom_point(data = bin_data, 
+                          aes(x = x, y = y),
+                          shape = 1,  
+                          color = "black", 
+                          size = sizes[i],
+                          show.legend = FALSE)
       }
     }
   }
@@ -184,25 +196,40 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     }
   }
   
+  # Reemplaza la sección de LimCont en tu función plotVec con este código
+
   # Add control limits
   if (!is.null(LimCont)) {
     if (length(LimCont) == 1) {
-      # Single control limit
       p <- p + geom_hline(yintercept = LimCont, color = "red", 
-                         linetype = "dashed", linewidth = 0.8)  
+                        linetype = "dashed", linewidth = 0.8)  
     } else if (length(LimCont) == N) {
-      # Variable control limits
-      limit_data <- data.frame(
-        x = 1:N,
-        y = LimCont
-      )
-      p <- p + geom_line(data = limit_data, aes(x = x, y = y), 
-                        color = "red", linetype = "dashed", linewidth = 0.8)  
+      limit_data <- data.frame()
+      
+      for (i in 1:N) {
+        if (i < N) {
+          limit_data <- rbind(limit_data, data.frame(
+            x = c(i, i+1),
+            y = c(LimCont[i], LimCont[i])
+          ))
+          
+          if (i < N) {
+            limit_data <- rbind(limit_data, data.frame(
+              x = c(i+1, i+1),
+              y = c(LimCont[i], LimCont[i+1])
+            ))
+          }
+        }
+      }
+      
+      p <- p + geom_path(data = limit_data, aes(x = x, y = y), 
+                        color = "red", linetype = "dashed", linewidth = 0.8,
+                        inherit.aes = FALSE)
     } else if (length(LimCont) > 1 && length(LimCont) < N) {
       # Multiple constant control limits
       for (lim in LimCont) {
         p <- p + geom_hline(yintercept = lim, color = "red", 
-                           linetype = "dashed", linewidth = 0.8) 
+                          linetype = "dashed", linewidth = 0.8) 
       }
     }
   }
