@@ -195,8 +195,6 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
       p <- p + scale_color_gradientn(colors = colors)
     }
   }
-  
-  # Reemplaza la sección de LimCont en tu función plotVec con este código
 
   # Add control limits
   if (!is.null(LimCont)) {
@@ -234,7 +232,6 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     }
   }
   
-  # IMPROVED X-AXIS LABEL HANDLING
   # Calculate how many labels to skip for readability
   if (N > max_x_labels) {
     step_size <- ceiling(N / max_x_labels)
