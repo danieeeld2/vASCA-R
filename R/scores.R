@@ -87,7 +87,7 @@ scores <- function(model,
   # Set default classes if not provided
   if (is.null(classes)) {
     if (plotcal) {
-      classes <- rep(1, K) # Default to single class if plotcal=TRUE and no classes provided
+      classes <- c(rep(1, N), rep(2, L)) # Default to two classes if plotcal=TRUE and no classes provided
     } else {
       classes <- rep(1, L) # Use single class for test data if plotcal is FALSE
     }
