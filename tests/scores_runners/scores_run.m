@@ -43,24 +43,24 @@ function scores_run(varargin)
     if isoctave()
         args = argv();
         % Attempt to install and load jsonlab if it's not already loaded
-        try
-            pkg load jsonlab;
-        catch
-            try
-                fprintf('Attempting to install jsonlab package...\n');
-                pkg install -forge jsonlab;
-                pkg load jsonlab;
-            catch ME
-                if ~isempty(strfind(ME.message, 'package not found'))
-                    fprintf('Error: The package "jsonlab" was not found on Octave Forge.\n');
-                    fprintf('Please ensure you have a working internet connection and that Octave Forge is accessible.\n');
-                    fprintf('You might need to try installing it manually from the Octave command line:\n');
-                    fprintf('  pkg install -forge jsonlab\n');
-                else
-                    error('Octave requires the jsonlab package. Error: %s', ME.message);
-                end
-            end
-        end
+        % try
+        %     pkg load jsonlab;
+        % catch
+        %     try
+        %         fprintf('Attempting to install jsonlab package...\n');
+        %         pkg install -forge jsonlab;
+        %         pkg load jsonlab;
+        %     catch ME
+        %         if ~isempty(strfind(ME.message, 'package not found'))
+        %             fprintf('Error: The package "jsonlab" was not found on Octave Forge.\n');
+        %             fprintf('Please ensure you have a working internet connection and that Octave Forge is accessible.\n');
+        %             fprintf('You might need to try installing it manually from the Octave command line:\n');
+        %             fprintf('  pkg install -forge jsonlab\n');
+        %         else
+        %             error('Octave requires the jsonlab package. Error: %s', ME.message);
+        %         end
+        %     end
+        % end
     else
         args = varargin;
     end
@@ -106,6 +106,9 @@ function scores_run(varargin)
     if ~isfield(model, 'av'), model.av = []; end
     if ~isfield(model, 'sc'), model.sc = []; end
 
+    num_observations = size(model.scores, 1);
+    fprintf('Number of observations in scores matrix: %d\n', num_observations);
+
     % Parse optional parameters
     params = {};
     if length(args) > 1
@@ -113,21 +116,58 @@ function scores_run(varargin)
             if i+1 > length(args)
                 error('Parameter %s needs a value', args{i});
             end
-            params{end+1} = args{i};
+            param_name = args{i};
             param_value = args{i+1};
-            if ischar(param_value)
-                if (startsWith(param_value, '{') && endsWith(param_value, '}')) || ...
-                (startsWith(param_value, '[') && endsWith(param_value, ']'))
+
+            % Special handling for ObsLabel
+            if strcmp(param_name, 'ObsLabel')
+                % Convert string representation of cell array to actual cell array
+                if ischar(param_value) && startsWith(param_value, '{') && endsWith(param_value, '}')
+                    try
+                        % Remove braces and split by semicolons
+                        clean_str = param_value(2:end-1);
+                        elements = strsplit(clean_str, ';');
+                        % Trim whitespace and remove quotes
+                        elements = strtrim(elements);
+                        elements = strrep(elements, '''', '');
+                        param_value = elements(:);  % Ensure column vector
+                    catch
+                        warning('Could not parse ObsLabel value: %s', param_value);
+                        param_value = [];
+                    end
+                end
+            % Handle other special parameters
+            elseif strcmp(param_name, 'ObsClass')
+                if ischar(param_value)
                     try
                         evaluated_value = eval(param_value);
-                        param_value = evaluated_value;
+                        if ~isvector(evaluated_value)
+                            warning('ObsClass value should evaluate to a vector.');
+                            param_value = [];
+                        else
+                            param_value = evaluated_value(:); % Ensure column vector
+                            if length(param_value) ~= num_observations
+                                warning('Number of elements in ObsClass (%d) does not match the number of observations (%d). Setting ObsClass to empty.', length(param_value), num_observations);
+                                param_value = [];
+                            end
+                        end
                     catch
-                        fprintf('Warning: Could not evaluate parameter %s value: %s\n', args{i}, param_value);
+                        warning('Could not parse ObsClass value: %s', param_value);
+                        param_value = [];
+                    end
+                end
+            elseif strcmp(param_name, 'BlurIndex')
+                if ischar(param_value)
+                    try
+                        param_value = str2double(param_value);
+                    catch
+                        warning('Could not parse BlurIndex value: %s', param_value);
+                        param_value = 1; % Default value
                     end
                 end
             end
-            
-            % Save the processed value
+
+            params{end+1} = param_name;
             params{end+1} = param_value;
         end
     end
