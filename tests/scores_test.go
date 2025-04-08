@@ -114,7 +114,7 @@ func TestScores(t *testing.T) {
 		skipOctave bool
 	}{
 		{
-			name:    "basic scores",
+			name:    "scores with basic scores",
 			dataset: "scores_model_1.json",
 		},
 		{
@@ -130,7 +130,7 @@ func TestScores(t *testing.T) {
 			octaveArgs: []string{"PlotType", "Bars"},
 		},
 		{
-			name:       "scores with test data",
+			name:       "scores with plotcal=FALSE and model-embedded test data",
 			dataset:    "scores_model_1.json",
 			rArgs:      []string{"PlotCal", "FALSE"},
 			octaveArgs: []string{"PlotCal", "false"},
@@ -138,8 +138,8 @@ func TestScores(t *testing.T) {
 		{
 			name:       "scores with custom labels",
 			dataset:    "scores_model_2.json",
-			rArgs:      []string{"ObsLabel", "c('Obs1','Obs2','Obs3','Obs4','Obs5', as.character(6:23))", "Title", "Custom Labels"},
-			octaveArgs: []string{"ObsLabel", "{'Obs1';'Obs2';'Obs3';'Obs4';'Obs5';'6';'7';'8';'9';'10';'11';'12';'13';'14';'15';'16';'17';'18';'19';'20';'21';'22';'23'}", "Title", "'Custom Labels'"},
+			rArgs:      []string{"ObsLabel", "c('Obs1','Obs2','Obs3','Obs4','Obs5', as.character(6:28))", "Title", "Custom Labels"},
+			octaveArgs: []string{"ObsLabel", "{'Obs1';'Obs2';'Obs3';'Obs4';'Obs5';'6';'7';'8';'9';'10';'11';'12';'13';'14';'15';'16';'17';'18';'19';'20';'21';'22';'23';'24';'25';'26';'27';'28'}", "Title", "'Custom Labels'"},
 		},
 		{
 			name:       "scores with classes",
@@ -152,6 +152,12 @@ func TestScores(t *testing.T) {
 			dataset:    "scores_model_1.json",
 			rArgs:      []string{"BlurIndex", "0.5"},
 			octaveArgs: []string{"BlurIndex", "0.5"},
+		},
+		{
+			name:       "scores with explicit classes and color",
+			dataset:    "scores_model_3.json",
+			rArgs:      []string{"ObsClass", "rep(c(1,1,2,2,3,3), length.out=30)", "Color", "hsv"},
+			octaveArgs: []string{"ObsClass", "repmat([1;1;2;2;3;3], ceil(30/6), 1)(1:30)", "Color", "'hsv'"},
 		},
 	}
 
