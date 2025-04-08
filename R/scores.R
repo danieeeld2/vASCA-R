@@ -61,7 +61,7 @@ scores <- function(model,
   if (plotcal) {
     K <- N + L
   } else {
-    K <- L
+    K <- L # K should be L if plotting only test data
   }
   
   # Set default labels if not provided
@@ -69,51 +69,35 @@ scores <- function(model,
     if (plotcal) {
       label <- c(1:N, 1:L)
     } else {
-      if (L > 0) {
-        label <- 1:L
-      } else {
-        # Showing calibration data despite original_plotcal = FALSE
-        label <- 1:N
-      }
+      label <- 1:L
     }
     label <- as.character(label)
   } else {
     # Ensure label has the correct length
     if (length(label) < K) {
-      # If not enough labels, extend with numeric indices
       warning("Not enough labels provided. Extending with numeric indices.")
       additional_labels <- as.character((length(label) + 1):K)
       label <- c(label, additional_labels)
     } else if (length(label) > K) {
-      # If too many labels, truncate
       warning("Too many labels provided. Truncating to match observation count.")
       label <- label[1:K]
     }
   }
-  
-  cat("Length of label:", length(label), "\n")
-  
+    
   # Set default classes if not provided
   if (is.null(classes)) {
     if (plotcal) {
-      classes <- c(rep(1, N), rep(2, L))
+      classes <- rep(1, K) # Default to single class if plotcal=TRUE and no classes provided
     } else {
-      if (L > 0) {
-        classes <- rep(2, L)  # Use class 2 for test data
-      } else {
-        # Showing calibration data despite original_plotcal = FALSE
-        classes <- rep(1, N)
-      }
+      classes <- rep(1, L) # Use single class for test data if plotcal is FALSE
     }
   } else {
     # Ensure classes has the correct length
     if (length(classes) < K) {
-      # If not enough class labels, repeat the pattern cyclically
       warning("Not enough class labels provided. Repeating pattern cyclically.")
       classes_pattern <- classes
       classes <- rep(classes_pattern, length.out = K)
     } else if (length(classes) > K) {
-      # If too many class labels, truncate
       warning("Too many class labels provided. Truncating to match observation count.")
       classes <- classes[1:K]
     }
@@ -167,7 +151,7 @@ scores <- function(model,
       Tt <- rbind(T_cal, TT)
     }
   } else {
-    Tt <- TT
+    Tt <- TT # If plotcal is FALSE, use only test data
   }
   
   # Initialize plot list
@@ -184,8 +168,8 @@ scores <- function(model,
                    EleLabel = label,
                    ObsClass = classes,
                    XYLabel = c("", sprintf("Scores %s %d (%.0f%%)", dim, model$lvs[i], var_explained)),
-                   Color = color)
-      figH[[length(figH) + 1]] <- fig + ggtitle(tit)
+                   Color = color) + ggplot2::ggtitle(tit) + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+      figH[[length(figH) + 1]] <- fig
     }
   } 
   # Generate scatter plots for multiple LVs
@@ -200,8 +184,8 @@ scores <- function(model,
                          XYLabel = c(sprintf("Scores %s %d (%.0f%%)", dim, model$lvs[i], var_explained_i),
                                     sprintf("Scores %s %d (%.0f%%)", dim, model$lvs[j], var_explained_j)),
                          BlurIndex = blur,
-                         Color = color)
-        figH[[length(figH) + 1]] <- fig + ggtitle(tit)
+                         Color = color) + ggplot2::ggtitle(tit) + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+        figH[[length(figH) + 1]] <- fig
       }
     }
   }
