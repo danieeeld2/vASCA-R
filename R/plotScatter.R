@@ -29,6 +29,8 @@
 #' @import ggrepel
 #' @import scales
 #' @import viridis
+#' 
+#' @author Daniel Alconchel Vázquez
 #' @export
 plotScatter <- function(bdata, EleLabel = NULL, ObsClass = NULL, XYLabel = c("", ""),
                         LimCont = NULL, Multiplicity = NULL, Markers = c(20, 50, 100),

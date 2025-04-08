@@ -20,6 +20,7 @@ library(ggrepel)  # For label repulsion
 #' @param blur_index Controls label density (0-1, default: 0.3)
 #'
 #' @return A ggplot object with the scatter plot and labels
+#' @author Daniel Alconchel Vázquez
 text_scatter_ggplot <- function(data, x_col = 1, y_col = 2, ele_label = NULL, 
                                obs_class = NULL, plot_mult = "none", 
                                multiplicity = NULL, blur_index = 0.3) {

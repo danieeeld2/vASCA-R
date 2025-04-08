@@ -38,6 +38,7 @@
 #'                  plottype = "Scatter", tit = "Scores Plot")
 #' result[[1]]  # Display first plot
 #'
+#' @author Daniel Alconchel Vázquez
 #' @export
 scores <- function(model,
                    obstest = NULL,

@@ -28,6 +28,7 @@
 #' result$average  # Sample averages
 #' result$scale  # Sample scales
 #'
+#' @author Daniel Alconchel Vázquez
 #' @export
 preprocess2D <- function(x, Preprocessing = 2, Weights = rep(1, ncol(x))) {
   N <- nrow(x)

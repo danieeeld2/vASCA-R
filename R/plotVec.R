@@ -30,6 +30,8 @@
 #' @import ggplot2
 #' @import RColorBrewer
 #' @import viridis
+#' 
+#' @author Daniel Alconchel Vázquez
 #' @export
 plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NULL,
                      PlotType="Bars", ClassType="default", VecLabel=NULL,

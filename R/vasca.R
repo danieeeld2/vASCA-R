@@ -14,6 +14,12 @@
 #'
 #' @return A list that contains scores, loadings, singular values and projections
 #'         of the factors and interactions.
+#' 
+#' @author Daniel Alconchel Vázquez
+#' @references Camacho J, Vitale R, Morales-Jiménez D, Gómez-Llorente C. Variable-selection
+#' ANOVA Simultaneous Component Analysis (VASCA). Bioinformatics. 2023 Jan
+#' 1;39(1):btac795.
+#' @seealso \code{\link{parglmVS}} for the parallel general linear model with variable selection.
 #' @export 
 vasca <- function(parglmoVS, siglev = 0.01) {
   # Argument validation
