@@ -1,25 +1,23 @@
+#' Principal Component Analysis using Eigen Decomposition
+#'
+#' @param xcs A numeric matrix representing the preprocessed bilinear data set (NxM).
+#' @param PCs (Optional) A numeric or character vector specifying the principal components to be considered. Default is the range from 1 to the rank of the matrix (excluding 0).
+#' 
+#' @return A list containing the following components:
+#' \item{var}{The total variance of the data.}
+#' \item{lvs}{The indices of the latent variables (principal components).}
+#' \item{loads}{A matrix of loadings (eigenvectors).}
+#' \item{scores}{A matrix of scores (transformed data).}
+#' \item{type}{The type of analysis, which is "PCA" in this case.}
+#'
+#' @examples
+#' # Example usage
+#' xcs <- matrix(rnorm(100), ncol = 10)  # Example preprocessed data
+#' model <- pcaEig(xcs, PCs = 1:2)
+#' 
+#' @author Daniel Alconchel Vázquez
+#' @export
 pcaEig <- function(xcs, ...) {
-  # Principal Component Analysis based on the eigendecompostion of XX.
-  #
-  # model = pcaEig(xcs)     % minimum call
-  #
-  #
-  #
-  # INPUTS:
-  #
-  # xcs: [NxM] preprocessed billinear data set
-  #
-  #
-  # Optional INPUTS (parameter):
-  #
-  # 'PCs': [1xA] Principal Components considered (e.g. pcs = 1:2 selects the
-  #   first two PCs). By default, pcs = 0:min(size(xcs))
-  #
-  #
-  # OUTPUTS:
-  #
-  # model: structure that contains model information
-
   ## Arguments checking
 
   # Set default values

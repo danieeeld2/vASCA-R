@@ -8,20 +8,18 @@ if (!require(ggrepel)) {
 library(ggplot2)
 library(ggrepel)  # For label repulsion
 
-# Create a scatter plot with labels using ggplot2
-#
-# Inputs:
-# data: data frame or matrix with plotting coordinates
-# x_col, y_col: column indices or names for x and y coordinates
-# ele_label: vector of element labels (row names used by default)
-# obs_class: vector of class assignments for points (single class by default)
-# plot_mult: one of "none" (default), "size", "shape", "zaxis", "zsize"
-# multiplicity: vector of point weights/frequencies (all 1 by default)
-# blur_index: controls label density (0-1, higher shows more labels)
-#
-# Outputs:
-# A ggplot object with the scatter plot and labels
-
+#' Create a scatter plot with labels using ggplot2
+#'
+#' @param data Data frame or matrix with plotting coordinates
+#' @param x_col Column index or name for x-axis coordinates (default: 1)
+#' @param y_col Column index or name for y-axis coordinates (default: 2)
+#' @param ele_label Vector of element labels (row names used by default)
+#' @param obs_class Vector of class assignments for points (default: 1)
+#' @param plot_mult One of "none", "size", "shape", "zaxis", "zsize" (default: "none")
+#' @param multiplicity Vector of point weights/frequencies (default: all 1)
+#' @param blur_index Controls label density (0-1, default: 0.3)
+#'
+#' @return A ggplot object with the scatter plot and labels
 text_scatter_ggplot <- function(data, x_col = 1, y_col = 2, ele_label = NULL, 
                                obs_class = NULL, plot_mult = "none", 
                                multiplicity = NULL, blur_index = 0.3) {

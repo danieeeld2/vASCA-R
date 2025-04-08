@@ -26,6 +26,11 @@
 #'
 #' # Line plot with thinner lines
 #' plotVec(matrix(rnorm(300), ncol=3), PlotType="Lines", LimCont=c(1,-1,3))
+#'
+#' @import ggplot2
+#' @import RColorBrewer
+#' @import viridis
+#' @export
 plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NULL,
                      PlotType="Bars", ClassType="default", VecLabel=NULL,
                      Multiplicity=NULL, Markers=c(20,50,100), Color=NULL, max_x_labels=20,

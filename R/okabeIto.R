@@ -1,13 +1,14 @@
+#' Generate colorblind-friendly colors from the Okabe-Ito palette
+#'
+#' @param n_elems Integer. Number of colors to return.
+#'
+#' @return A character vector of hex color codes from the Okabe-Ito palette.
+#'
+#' @examples
+#' okabe_ito_hex(5)
+#'
+#' @author Daniel Alconchel Vázquez
 okabe_ito_hex <- function(n_elems) {
-  # Colormap for color blindness (returns hex codes)
-  #
-  # Inputs:
-  # n_elems: [1x1] number of color items.
-  #
-  # Outputs:
-  # map: vector of n_elems hex color codes.
-  
-  # Okabe-Ito color palette in hex format
   okabe_ito_colors <- c(
     "#191919", # Black
     "#E69F00", # Orange

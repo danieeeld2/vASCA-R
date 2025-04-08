@@ -1,18 +1,35 @@
+#' Preprocess 2D Data
+#'
+#' This function preprocesses 2-way data by applying various methods of preprocessing
+#' such as mean centering, auto-scaling, or Pareto scaling. Weights can be applied after
+#' the preprocessing step.
+#'
+#' @param x A matrix of size NxM representing the 2D data set (N samples and M features).
+#' @param Preprocessing A numeric value indicating the preprocessing method:
+#'   \itemize{
+#'     \item 0: No preprocessing
+#'     \item 1: Mean centering
+#'     \item 2: Auto-scaling (default)
+#'     \item 3: Pareto-scaling
+#'   }
+#' @param Weights A numeric vector of length M, representing the weights to apply after preprocessing.
+#'   The default is a vector of ones.
+#'
+#' @return A list with the following components:
+#' \item{xcs}{A matrix of the preprocessed data.}
+#' \item{average}{A vector containing the sample averages according to the preprocessing method.}
+#' \item{scale}{A vector containing the sample scale according to the preprocessing method.}
+#'
+#' @examples
+#' # Example usage:
+#' x <- matrix(rnorm(100), nrow = 10, ncol = 10)  # Generate random data
+#' result <- preprocess2D(x, Preprocessing = 2)  # Apply auto-scaling
+#' result$xcs  # Preprocessed data
+#' result$average  # Sample averages
+#' result$scale  # Sample scales
+#'
+#' @export
 preprocess2D <- function(x, Preprocessing = 2, Weights = rep(1, ncol(x))) {
-  # Preprocess 2-way data.
-  #
-  # xcs = preprocess2D(x)  # minimum call
-  #
-  # INPUTS:
-  # x: matrix of size NxM (billinear data set)
-  # Preprocessing: 0 = no preprocessing, 1 = mean-centering, 2 = auto-scaling (default)
-  # Weights: vector of length M (weights applied after preprocessing)
-  #
-  # OUTPUTS:
-  # xcs: preprocessed data
-  # average: sample average according to the preprocessing method
-  # scale: sample scale according to the preprocessing method
-
   N <- nrow(x)
   M <- ncol(x)
 

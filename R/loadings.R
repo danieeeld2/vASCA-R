@@ -1,19 +1,33 @@
-#' Compute and plot loadings.
+#' Compute and plot loadings
 #'
 #' @param model A list with model parameters. 
-#'   lvs: Numeric vector with Latent Variables considered (e.g. lvs = 1:2 selects the first two LVs).
-#'   loads: Matrix [MxA] of model parameters.
-#'   scores: Matrix [NxA] of data scores.
-#'
-#' @param plottype Character. Type of plot: "Scatter" (default) or "Bars".
+#'   \itemize{
+#'     \item \code{lvs}: Numeric vector with Latent Variables considered (e.g. \code{1:2} selects the first two LVs).
+#'     \item \code{loads}: Matrix [MxA] of model parameters.
+#'     \item \code{scores}: Matrix [NxA] of data scores.
+#'   }
+#' @param plottype Character. Type of plot: \code{"Scatter"} (default) or \code{"Bars"}.
 #' @param tit Character. Title for the plots. Empty by default.
 #' @param label Character vector [Mx1]. Name of the variables (indices are used by default).
 #' @param classes Numeric vector [Mx1]. Groups for different visualization (a single group by default).
-#' @param blur Numeric. Avoid blur when adding labels. The higher, the more labels are printed. Inf shows all labels (1 by default).
-#' @param color Character or vector. Color for data. "hsv", "parula", "okabeIto" for color palettes, or a vector of colors.
+#' @param blur Numeric. Avoid blur when adding labels. The higher, the more labels are printed. \code{Inf} shows all labels (default is 1).
+#' @param color Character or vector. Color for data. Options include \code{"hsv"}, \code{"parula"}, \code{"okabeIto"} for color palettes, or a vector of specific colors.
 #'
-#' @return A list of plot handles.
+#' @return A list of ggplot objects representing the loadings plots
 #'
+#' @examples
+#' # Example with simulated data:
+#' model <- list(
+#'   lvs = 1:2,
+#'   loads = matrix(rnorm(20), nrow = 10),
+#'   scores = matrix(rnorm(40), nrow = 20),
+#'   type = "PCA"
+#' )
+#' loadings(model)
+#'
+#' @author Daniel Alconchel Vázquez
+#' @export
+#' @importFrom ggplot2 ggtitle
 loadings <- function(model,
                      plottype = "Scatter",
                      tit = " ",

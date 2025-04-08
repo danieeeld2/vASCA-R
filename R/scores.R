@@ -1,21 +1,44 @@
-#' Compute and plot scores.
+#' Compute and Plot Scores
+#'
+#' This function computes and visualizes the scores of a model, either through bar plots or scatter plots.
+#' It can handle both calibration and test data, and allows customization of plot appearance.
 #'
 #' @param model A list with model parameters:
-#'   - scores: Matrix [N x A] of data scores
-#'   - lvs: Vector of latent variables to use (e.g., 1:2)
-#'   - type: "PCA" or "PLS" (optional)
+#'   \itemize{
+#'     \item \strong{scores}: Matrix [N x A] of data scores (calibration data).
+#'     \item \strong{lvs}: Vector of latent variables to use (e.g., 1:2).
+#'     \item \strong{type}: Model type, either "PCA" or "PLS" (optional).
+#'     \item \strong{loads}: Matrix with loadings (optional).
+#'     \item \strong{var}: Explained variance (optional).
+#'     \item \strong{av}: Mean vector for test data (optional).
+#'     \item \strong{sc}: Scaling vector for test data (optional).
+#'     \item \strong{scoresV}: Alternative scores (optional).
+#'     \item \strong{test}: Matrix with test data (optional).
+#'   }
+#' @param obstest Optional matrix [L x M] with external observations (test data).
+#' @param plottype Character string specifying the plot type:
+#'   \itemize{
+#'     \item "Scatter": Scatter plots (default).
+#'     \item "Bars": Bar plots.
+#'   }
+#' @param plotcal Logical indicating whether to plot both calibration and test data (default: TRUE).
+#' @param tit Character string for the plot title (default: "").
+#' @param label Labels for observations (default: NULL, generates labels).
+#' @param classes Classes for visualization (default: NULL, assigns default classes).
+#' @param blur Numeric value controlling label density (default: 1).
+#' @param color A color palette or vector for plot customization (default: NULL).
 #'
-#' @param obstest Optional [L x M] matrix with external observations
-#' @param plottype "Scatter" (default) or "Bars"
-#' @param plotcal Logical. If TRUE (default), plot both calibration and test. If FALSE, only test
-#' @param tit Plot title (default: "")
-#' @param label Labels for observations
-#' @param classes Classes for visualization
-#' @param blur Label density control (default: 1)
-#' @param color Color palette or vector
+#' @return A list of ggplot objects for the generated plots.
 #'
-#' @return List of ggplot objects
+#' @examples
+#' # Example usage:
+#' model <- list(scores = matrix(rnorm(100), nrow = 10, ncol = 10), 
+#'               lvs = 1:2, var = rep(1, 2), type = "PCA")
+#' result <- scores(model, obstest = matrix(rnorm(30), nrow = 5, ncol = 6), 
+#'                  plottype = "Scatter", tit = "Scores Plot")
+#' result[[1]]  # Display first plot
 #'
+#' @export
 scores <- function(model,
                    obstest = NULL,
                    plottype = "Scatter",

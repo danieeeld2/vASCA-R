@@ -14,7 +14,7 @@
 #'
 #' @return A list that contains scores, loadings, singular values and projections
 #'         of the factors and interactions.
-#'
+#' @export 
 vasca <- function(parglmoVS, siglev = 0.01) {
   # Argument validation
   if (missing(parglmoVS)) {

@@ -1,9 +1,19 @@
 #' Scatter plot function in R (ggplot2 implementation)
 #'
 #' @param bdata Matrix or data frame with bidimensional data to plot (Nx2)
-#' @param ... Optional parameters
+#' @param EleLabel Optional vector of element labels. If NULL, defaults to 1:N.
+#' @param ObsClass Optional vector of class labels for each observation. If NULL, defaults to 1 for all observations.
+#' @param XYLabel Optional vector of length 2 specifying the x and y axis labels. Default is c("", "").
+#' @param LimCont Optional list of two vectors for control limits in the x and y axes, respectively. Default is NULL.
+#' @param Multiplicity Optional vector specifying the multiplicity (size of points). Default is NULL, which implies size=1 for all.
+#' @param Markers Optional vector of 3 numeric values specifying the marker sizes for different multiplicity ranges. Default is c(20, 50, 100).
+#' @param BlurIndex Optional numeric value specifying the blur effect for the points. Default is 0.3.
+#' @param Color Optional string specifying the color scale. Possible values are 'hsv', 'parula', 'viridis'. Default is NULL (uses 'viridis').
+#' @param FilledMarkers Optional logical indicating whether to use filled markers (TRUE) or not (FALSE). Default is FALSE.
+#' @param PlotMult Optional string specifying how to visualize multiplicity. Possible values are "none", "size", "shape", "zaxis", "zsize". Default is "none".
+#' @param ClassType Optional string specifying the type of class data. Possible values are "default", "Numerical", or "Categorical". Default is "default".
 #'
-#' @return A ggplot object
+#' @return A ggplot object representing the scatter plot.
 #'
 #' @examples
 #' # Basic usage
@@ -15,6 +25,11 @@
 #'             ObsClass=c(1,1,1,2,2), 
 #'             XYLabel=c("Y","X"))
 #'
+#' @import ggplot2
+#' @import ggrepel
+#' @import scales
+#' @import viridis
+#' @export
 plotScatter <- function(bdata, EleLabel = NULL, ObsClass = NULL, XYLabel = c("", ""),
                         LimCont = NULL, Multiplicity = NULL, Markers = c(20, 50, 100),
                         BlurIndex = 0.3, Color = NULL, FilledMarkers = FALSE,
