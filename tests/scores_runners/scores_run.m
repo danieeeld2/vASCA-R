@@ -165,6 +165,15 @@ function scores_run(varargin)
                         param_value = 1; % Default value
                     end
                 end
+            elseif strcmp(param_name, 'PlotCal') % Add this block to handle PlotCal
+                if strcmp(param_value, 'true')
+                    param_value = true;
+                elseif strcmp(param_value, 'false')
+                    param_value = false;
+                else
+                    warning('Could not parse PlotCal value: %s. Using default (true).', param_value);
+                    param_value = true; % Default value
+                end
             end
 
             params{end+1} = param_name;
