@@ -6,6 +6,7 @@
 - [3. 📁 Repository Structure](#3--repository-structure)
   - [3.1. Tests Directory Structure](#31-tests-directory-structure)
 - [4. 👷🏻 GitHub Workflows](#4--github-workflows)
+- [5. 🐳 Docker Image](#5-🐳-docker-image)
 - [6. 📝 Functions Description](#6--functions-description)
 - [7. Example Usage](#7-example-usage)
   - [7.1 MATLAB/Octave](#71-matlaboctave)
