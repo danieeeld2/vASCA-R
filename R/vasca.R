@@ -114,12 +114,12 @@ vasca <- function(parglmoVS, siglev = 0.01) {
         if (is.list(vascao$factors[[factor]]$matrix)) {
           if (length(vascao$factors[[factor]]$matrix) >= max(inds)) {
             mat_cols <- lapply(inds, function(i) vascao$factors[[factor]]$matrix[[i]])
-            do.call(cbind, mat_cols)
+            as.matrix(do.call(cbind, mat_cols))
           } else {
             stop("Matrix index out of bounds")
           }
         } else {
-          vascao$factors[[factor]]$matrix[, inds]
+          as.matrix(vascao$factors[[factor]]$matrix[, inds])
         }
       }, error = function(e) {
         warning("Failed to extract matrix for factor ", factor, ": ", e$message)
@@ -223,7 +223,7 @@ vasca <- function(parglmoVS, siglev = 0.01) {
         next
       }
 
-      xf <- IM[, inds]
+      xf <- as.matrix(IM[, inds])
 
       # Add contributing factors if they exist
       if (!is.null(vascao$interactions[[interaction]]$factors) && 
@@ -242,7 +242,7 @@ vasca <- function(parglmoVS, siglev = 0.01) {
             }, error = function(e) NULL)
             
             if (!is.null(fact_matrix)) {
-              xf <- xf + fact_matrix
+              xf <- xf + as.matrix(fact_matrix)
             }
           }
         }
