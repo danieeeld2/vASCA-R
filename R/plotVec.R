@@ -37,54 +37,56 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
                      PlotType="Bars", ClassType="default", VecLabel=NULL,
                      Multiplicity=NULL, Markers=c(20,50,100), Color=NULL, max_x_labels=20,
                      line_width=0.5, point_size=1.5) {
-  
+
   # Load required packages
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     install.packages("ggplot2", repos = "https://cran.r-project.org", dependencies = TRUE)
   }
   library(ggplot2)
-  
+
   # Function to approximate MATLAB's parula colormap
   parula_colors <- function(n) {
     # Approximate the parula colormap from MATLAB
-    colorRampPalette(c("#352A87", "#0F5CDD", "#1481D6", "#06A4CA", 
+    colorRampPalette(c("#352A87", "#0F5CDD", "#1481D6", "#06A4CA",
                        "#2EB7A4", "#87BF77", "#D1BB59", "#FEC832", "#F9FB0E"))(n)
   }
-  
+
 
   # Convert input to matrix if needed
   if (!is.matrix(vec)) vec <- as.matrix(vec)
   # Handle single row vectors
   if (nrow(vec) == 1) vec <- t(vec)
-  
+
   N <- nrow(vec)
   M <- ncol(vec)
-  
+
   # Set default values
   if (is.null(EleLabel)) EleLabel <- 1:N
   if (is.null(ObsClass)) ObsClass <- rep(1, N)
   if (is.null(XYLabel)) XYLabel <- c("", "")
   if (is.null(VecLabel)) VecLabel <- 1:M
   if (is.null(Multiplicity)) Multiplicity <- rep(1, N)
-  
+
   # Ensure consistent types
   EleLabel <- as.character(EleLabel)
+  was_numeric_class <- FALSE # Flag to track if ObsClass was initially numeric
   if (is.numeric(ObsClass)) {
     # Store original numeric classes for potential color mapping
     numeric_classes <- ObsClass
+    was_numeric_class <- TRUE
   }
   ObsClass <- as.character(ObsClass)
   VecLabel <- as.character(VecLabel)
-  
+
   # Determine class type if not explicitly specified
   if (ClassType == "default") {
-    if (is.numeric(numeric_classes) && length(unique(numeric_classes)) >= 10) {
+    if (was_numeric_class && length(unique(numeric_classes)) >= 10) {
       ClassType <- "Numerical"
     } else {
       ClassType <- "Categorical"
     }
   }
-  
+
   # Create data frame for ggplot
   plot_data <- data.frame(
     Value = as.vector(vec),
@@ -95,11 +97,11 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     Class = rep(ObsClass, M),
     Multiplicity = rep(Multiplicity, M)
   )
-  
+
   if (exists("numeric_classes")) {
     plot_data$NumericClass <- rep(numeric_classes, M)
   }
-  
+
   # Base plot
   p <- ggplot(plot_data, aes(x = Element, y = Value))
 
@@ -107,47 +109,47 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
   if (!all(Multiplicity == 1)) {
     # Create bins according to markers
     bins <- c(0, 1, Markers, Inf)
-    
+
     # Calculate sizes exactly as MATLAB does
     sizes <- numeric(length(bins)-1)
     for (i in 1:(length(bins)-1)) {
       sizes[i] <- round(0.5 * i^2 * pi)
     }
-    
+
     for (i in 1:(length(bins)-1)) {
       elements_in_bin <- which(Multiplicity > bins[i] & Multiplicity <= bins[i+1])
-      
+
       if (length(elements_in_bin) > 0) {
         bin_data <- data.frame(
           x = elements_in_bin,
           y = rep(0, length(elements_in_bin))
         )
-        
-        p <- p + geom_point(data = bin_data, 
+
+        p <- p + geom_point(data = bin_data,
                           aes(x = x, y = y),
-                          shape = 1,  
-                          color = "black", 
+                          shape = 1,
+                          color = "black",
                           size = sizes[i],
                           show.legend = FALSE)
       }
     }
   }
-  
+
   # Handle different plot types and class types
   uniqueClasses <- unique(ObsClass)
   nClasses <- length(uniqueClasses)
-  
+
   # Determine color palette
   if (is.null(Color)) {
     if (ClassType == "Categorical" && nClasses <= 8) {
       Color <- "okabeIto"
     } else if (ClassType == "Categorical") {
-      Color <- "hsv" 
+      Color <- "hsv"
     } else {
       Color <- "parula"
     }
   }
-  
+
   # Generate appropriate colors
   if (Color == "okabeIto") {
     colors <- okabe_ito_hex(max(nClasses, M))
@@ -163,7 +165,7 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
       colors <- rainbow(max(nClasses, M))
     }
   }
-  
+
   if (ClassType == "Categorical") {
     # For categorical class types
     if (PlotType == "Bars") {
@@ -179,13 +181,13 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     } else {
       if (nClasses > 1) {
         # Group by class
-        p <- p + geom_line(aes(color = Class, group = interaction(Class, Variable)), 
+        p <- p + geom_line(aes(color = Class, group = interaction(Class, Variable)),
                           linewidth = line_width) +
                  geom_point(aes(color = Class), size = point_size)
         p <- p + scale_color_manual(values = colors[1:nClasses])
       } else {
         # Group by variable
-        p <- p + geom_line(aes(color = VariableLabel, group = Variable), 
+        p <- p + geom_line(aes(color = VariableLabel, group = Variable),
                           linewidth = line_width) +
                  geom_point(aes(color = VariableLabel), size = point_size)
         p <- p + scale_color_manual(values = colors[1:M])
@@ -195,8 +197,8 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     if (PlotType == "Bars") {
       p <- p + geom_col(aes(fill = NumericClass), position = position_dodge2(preserve = "single"), width = 0.8)
       p <- p + scale_fill_gradientn(colors = colors)
-    } else { 
-      p <- p + geom_line(aes(color = NumericClass, group = Variable), 
+    } else {
+      p <- p + geom_line(aes(color = NumericClass, group = Variable),
                         linewidth = line_width) +
                geom_point(aes(color = NumericClass), size = point_size)
       p <- p + scale_color_gradientn(colors = colors)
@@ -206,18 +208,18 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
   # Add control limits
   if (!is.null(LimCont)) {
     if (length(LimCont) == 1) {
-      p <- p + geom_hline(yintercept = LimCont, color = "red", 
-                        linetype = "dashed", linewidth = 0.8)  
+      p <- p + geom_hline(yintercept = LimCont, color = "red",
+                        linetype = "dashed", linewidth = 0.8)
     } else if (length(LimCont) == N) {
       limit_data <- data.frame()
-      
+
       for (i in 1:N) {
         if (i < N) {
           limit_data <- rbind(limit_data, data.frame(
             x = c(i, i+1),
             y = c(LimCont[i], LimCont[i])
           ))
-          
+
           if (i < N) {
             limit_data <- rbind(limit_data, data.frame(
               x = c(i+1, i+1),
@@ -226,33 +228,33 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
           }
         }
       }
-      
-      p <- p + geom_path(data = limit_data, aes(x = x, y = y), 
+
+      p <- p + geom_path(data = limit_data, aes(x = x, y = y),
                         color = "red", linetype = "dashed", linewidth = 0.8,
                         inherit.aes = FALSE)
     } else if (length(LimCont) > 1 && length(LimCont) < N) {
       # Multiple constant control limits
       for (lim in LimCont) {
-        p <- p + geom_hline(yintercept = lim, color = "red", 
-                          linetype = "dashed", linewidth = 0.8) 
+        p <- p + geom_hline(yintercept = lim, color = "red",
+                          linetype = "dashed", linewidth = 0.8)
       }
     }
   }
-  
+
   # Calculate how many labels to skip for readability
   if (N > max_x_labels) {
     step_size <- ceiling(N / max_x_labels)
     selected_indices <- seq(1, N, by = step_size)
-    
+
     # Create custom breaks and labels
     custom_breaks <- selected_indices
     custom_labels <- EleLabel[selected_indices]
-    
+
     p <- p + scale_x_continuous(breaks = custom_breaks, labels = custom_labels)
   } else {
     p <- p + scale_x_continuous(breaks = 1:N, labels = EleLabel)
   }
-  
+
   # Calculate appropriate text angle based on label length
   max_label_length <- max(nchar(EleLabel))
   if (max_label_length > 3 || N > 15) {
@@ -264,10 +266,10 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
     hjust_val <- 0.5
     vjust_val <- 0.5
   }
-  
+
   # Add labels and a MATLAB-like theme
-  p <- p + 
-    labs(x = XYLabel[1], y = XYLabel[2], 
+  p <- p +
+    labs(x = XYLabel[1], y = XYLabel[2],
          fill = if(ClassType == "Categorical") "Class" else NULL,
          color = if(ClassType == "Categorical") "Class" else NULL) +
     theme(
@@ -286,9 +288,9 @@ plotVec <- function(vec, EleLabel=NULL, ObsClass=NULL, XYLabel=NULL, LimCont=NUL
       # No margin expansion
       plot.margin = margin(10, 10, 10, 10)
     )
-  
+
   # Make sure axis is tight (similar to MATLAB's axis tight)
   p <- p + coord_cartesian(expand = FALSE)
-  
+
   return(p)
 }
