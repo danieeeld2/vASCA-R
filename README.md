@@ -1,17 +1,15 @@
 # vASCA-R - TFG Code Repository
 
 ## Table of Contents
-- [vASCA-R - TFG Code Repository](#vasca-r---tfg-code-repository)
-  - [Table of Contents](#table-of-contents)
-  - [1. 🎓 Introduction](#1--introduction)
-  - [2. 🧠 About VASCA](#2--about-vasca)
-  - [3. 📁 Repository Structure](#3--repository-structure)
-    - [3.1. Tests Directory Structure](#31-tests-directory-structure)
-  - [4. 👷🏻 GitHub Workflows](#4--github-workflows)
-  - [6. 📝 Functions Description](#6--functions-description)
-  - [7. Example Usage](#7-example-usage)
-    - [7.1 MATLAB/Octave](#71-matlaboctave)
-    - [7.2. R](#72-r)
+- [1. 🎓 Introduction](#1--introduction)
+- [2. 🧠 About VASCA](#2--about-vasca)
+- [3. 📁 Repository Structure](#3--repository-structure)
+  - [3.1. Tests Directory Structure](#31-tests-directory-structure)
+- [4. 👷🏻 GitHub Workflows](#4--github-workflows)
+- [6. 📝 Functions Description](#6--functions-description)
+- [7. Example Usage](#7-example-usage)
+  - [7.1 MATLAB/Octave](#71-matlaboctave)
+  - [7.2. R](#72-r)
 
 ---
 
