@@ -1,16 +1,17 @@
 # vASCA-R - TFG Code Repository
 
 ## Table of Contents
-- [1. 🎓 Introduction](#1--introduction)
-- [2. 🧠 About VASCA](#2--about-vasca)
-- [3. 📁 Repository Structure](#3--repository-structure)
-  - [3.1. Tests Directory Structure](#31-tests-directory-structure)
-- [4. 👷🏻 GitHub Workflows](#4--github-workflows)
-- [5. 🐳 Docker Image](#5-🐳-docker-image)
-- [6. 📝 Functions Description](#6--functions-description)
-- [7. Example Usage](#7-example-usage)
-  - [7.1 MATLAB/Octave](#71-matlaboctave)
-  - [7.2. R](#72-r)
+- [vASCA-R - TFG Code Repository](#vasca-r---tfg-code-repository)
+  - [Table of Contents](#table-of-contents)
+  - [1. 🎓 Introduction](#1--introduction)
+  - [2. 🧠 About VASCA](#2--about-vasca)
+  - [3. 📁 Repository Structure](#3--repository-structure)
+    - [3.1. Tests Directory Structure](#31-tests-directory-structure)
+  - [4. 👷🏻 GitHub Workflows](#4--github-workflows)
+  - [6. 📝 Functions Description](#6--functions-description)
+  - [7. Example Usage](#7-example-usage)
+    - [7.1 MATLAB/Octave](#71-matlaboctave)
+    - [7.2. R](#72-r)
 
 ---
 
@@ -122,6 +123,8 @@ docker run -it --rm -v "$(pwd):/app" -w /app danieeeld2/r-vasca-testing:latest /
 ```
 With this, you have a ready-to-use environment with all the code, languages, and dependencies installed, prepared for you to start programming your own analyses.
 
+⚠️⚠️ *If you check [issue #94](https://github.com/danieeeld2/vASCA-R/issues/94) and [Dockerfile](https://github.com/danieeeld2/vASCA-R/blob/main/Dockerfile), you’ll see that the Docker image tagged as `latest` does not come with the R dependencies preinstalled. As a result, when you run the scripts for the first time, the necessary R packages will be installed on-the-fly. This approach was taken because installing all dependencies directly during the image build process caused multiple version conflicts that broke the environment. If you'd rather use a version of the image with all R dependencies already installed (see [requirements.txt](https://github.com/danieeeld2/vASCA-R/blob/main/requirements.txt)), you can pull the image tagged as `r-dependencies-installed` instead of `latest`.*
+
 ## 6. 📝 Functions Description
 
 - **createDesign**: Generates a balanced design matrix for experimental designs based on a list of factor levels and the number of replicates. The function creates all possible combinations of the factor levels and replicates the rows if needed.
@@ -138,7 +141,7 @@ With this, you have a ready-to-use environment with all the code, languages, and
 
 ## 7. Example Usage
 
-We will provide an example of an execution pipeline in each language, using the Docker image `danieeeld2/r-vasca-testing:latest` and running everything from the root directory of the project. Start by running the image with a volume that includes the project, as instructed in [Section 5](#5-🐳-docker-image).
+We will provide an example of an execution pipeline in each language, using the Docker image `danieeeld2/r-vasca-testing:latest` (or `danieeeld2/r-vasca-testing:r-dependencies-installed` if you want to have already installed R dependencies) and running everything from the root directory of the project. Start by running the image with a volume that includes the project, as instructed in [Section 5](#5-🐳-docker-image).
 
 ```bash
 docker run -it --rm -v "$(pwd):/app" -w /app danieeeld2/r-vasca-testing:latest /bin/bash
