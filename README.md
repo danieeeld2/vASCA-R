@@ -96,7 +96,7 @@ In general, all functions return structures with numerical data that can be comp
 
 ⚠️⚠️ *`parglmVS` is the function responsible for calculating all the data structures in the permutation test. These permutations are random, and for the test, we require a large number of permutations due to the fact that the random number generators in both languages are different. This results in the test taking a considerable amount of time, as discussed in the issues [#51](https://github.com/danieeeld2/vASCA-R/issues/51) and [#52](https://github.com/danieeeld2/vASCA-R/issues/52), as well as in the PR [#30](https://github.com/danieeeld2/vASCA-R/pull/30). At the end of this PR, you can find a screenshot showing the execution time of this test and confirming that the function passes the tests. If you want to reactivate it, simply go to the `parglmVS_test.go` code and comment the two lines that contain `t.Skip`.* 
 
-In addition to the tests, we provide the scripts `vasca_benchmark.sh` and `parglmVS_benchmark.sh`, which generate comparative performance plots of the R and MATLAB/Octave implementations of these functions. The results are stored in the `<function>_benchmark/` folder. You can find more information about this benchmark in [Section 8](#8-📈-performance-comparison)
+In addition to the tests, we provide the scripts `vasca_benchmark.sh` and `parglmVS_benchmark.sh`, which generate comparative performance plots of the R and MATLAB/Octave implementations of these functions. The results are stored in the `<function>_benchmark/` folder. You can find more information about this benchmark in [Section 8](#8--performance-comparison)
 
 ## 4. 👷🏻 GitHub Workflows
 
@@ -151,7 +151,7 @@ With this, you have a ready-to-use environment with all the code, languages, and
 
 ## 7. Example Usage
 
-We will provide an example of an execution pipeline in each language, using the Docker image `danieeeld2/r-vasca-testing:latest` (or `danieeeld2/r-vasca-testing:r-dependencies-installed` if you want to have already installed R dependencies) and running everything from the root directory of the project. Start by running the image with a volume that includes the project, as instructed in [Section 5](#5-🐳-docker-image).
+We will provide an example of an execution pipeline in each language, using the Docker image `danieeeld2/r-vasca-testing:latest` (or `danieeeld2/r-vasca-testing:r-dependencies-installed` if you want to have already installed R dependencies) and running everything from the root directory of the project. Start by running the image with a volume that includes the project, as instructed in [Section 5](#5--docker-image).
 
 ```bash
 docker run -it --rm -v "$(pwd):/app" -w /app danieeeld2/r-vasca-testing:latest /bin/bash
