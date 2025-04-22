@@ -1,0 +1,17 @@
+Language,Dataset,SigLevel,Time(s)
+R,parglmVS_1,0.01,.316
+R,parglmVS_1,0.05,.313
+R,parglmVS_2,0.01,.232
+R,parglmVS_2,0.05,.225
+R,parglmVS_3,0.01,.348
+R,parglmVS_3,0.05,.350
+R,parglmVS_4,0.01,.349
+R,parglmVS_4,0.05,.348
+Octave,parglmVS_1,0.01,.243
+Octave,parglmVS_1,0.05,.244
+Octave,parglmVS_2,0.01,.201
+Octave,parglmVS_2,0.05,.202
+Octave,parglmVS_3,0.01,.253
+Octave,parglmVS_3,0.05,.251
+Octave,parglmVS_4,0.01,.256
+Octave,parglmVS_4,0.05,.261
