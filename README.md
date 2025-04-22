@@ -3,15 +3,19 @@
 ## Table of Contents
 - [vASCA-R - TFG Code Repository](#vasca-r---tfg-code-repository)
   - [Table of Contents](#table-of-contents)
-  - [1. 🎓 Introduction](#1--introduction)
-  - [2. 🧠 About VASCA](#2--about-vasca)
-  - [3. 📁 Repository Structure](#3--repository-structure)
+  - [1. 🎓 Introduction](#1-🎓-introduction)
+  - [2. 🧠 About VASCA](#2-🧠-about-vasca)
+  - [3. 📁 Repository Structure](#3-📁-repository-structure)
     - [3.1. Tests Directory Structure](#31-tests-directory-structure)
-  - [4. 👷🏻 GitHub Workflows](#4--github-workflows)
-  - [6. 📝 Functions Description](#6--functions-description)
+  - [4. 👷🏻 GitHub Workflows](#4-👷🏻-github-workflows)
+  - [5. 🐳 Docker Image](#5-🐳-docker-image)
+  - [6. 📝 Functions Description](#6-📝-functions-description)
   - [7. Example Usage](#7-example-usage)
     - [7.1 MATLAB/Octave](#71-matlaboctave)
     - [7.2. R](#72-r)
+  - [8. 📈 Performance Comparison](#8-📈-performance-comparison)
+    - [8.1. `parglmVS` Performance](#81-parglmvs-performance)
+    - [8.2. `vasca` Performance](#82-vasca-performance)
 
 ---
 
@@ -63,6 +67,8 @@ The `matlab/` folder contains the implementation of all functions involved in th
 ├── loadings_runners/
 ├── loadings_test.go
 ├── loadings_test_results/
+├── parglmVS_benchmark/
+├── parglmVS_benchmark.sh
 ├── parglmVS_runners/
 ├── parglmVS_test.go
 ├── pcaEig_runners/
@@ -78,6 +84,8 @@ The `matlab/` folder contains the implementation of all functions involved in th
 ├── scores_runners/
 ├── scores_test.go
 ├── scores_test_results/
+├── vasca_benchmark/
+├── vasca_benchmark.sh
 ├── vasca_runners/
 └── vasca_test.go
 ```
@@ -87,6 +95,8 @@ The `tests` folder contains the tests for each implemented function in Go. Since
 In general, all functions return structures with numerical data that can be compared as matrices in the tests, except for `plotScatter`, `plotVec`, `scores`, and `loadings`. These functions return images, so their tests generate a folder with the execution results and a file named `RESULTS.md` for comparing the plots in both languages.
 
 ⚠️⚠️ *`parglmVS` is the function responsible for calculating all the data structures in the permutation test. These permutations are random, and for the test, we require a large number of permutations due to the fact that the random number generators in both languages are different. This results in the test taking a considerable amount of time, as discussed in the issues [#51](https://github.com/danieeeld2/vASCA-R/issues/51) and [#52](https://github.com/danieeeld2/vASCA-R/issues/52), as well as in the PR [#30](https://github.com/danieeeld2/vASCA-R/pull/30). At the end of this PR, you can find a screenshot showing the execution time of this test and confirming that the function passes the tests. If you want to reactivate it, simply go to the `parglmVS_test.go` code and comment the two lines that contain `t.Skip`.* 
+
+In addition to the tests, we provide the scripts `vasca_benchmark.sh` and `parglmVS_benchmark.sh`, which generate comparative performance plots of the R and MATLAB/Octave implementations of these functions. The results are stored in the `<function>_benchmark/` folder. You can find more information about this benchmark in [Section 8](#8-📈-performance-comparison)
 
 ## 4. 👷🏻 GitHub Workflows
 
@@ -272,3 +282,65 @@ for (i in seq_len(vascao$nFactors)) {
   }
 }
 ```
+
+## 8. 📈 Performance Comparison
+
+In this repository, we have implemented several functions to carry out the VASCA pipeline in R. However, to evaluate the performance of the R implementation compared to its MATLAB/Octave counterpart, we focus on the two main scripts that form the core of the pipeline: `parglmVS` and `vasca`.
+
+### 8.1. `parglmVS` Performance
+
+The script `tests/parglmVS_benchmark.sh` automates the benchmarking process for the `parglmVS` function implemented in both R and MATLAB/Octave. It runs the function across multiple models (`linear`, `interaction`, and `full`) and a range of permutation values, measuring execution times for each configuration. The results are saved in a CSV file and visualized using several comparative plots, which are generated automatically with R and stored in the `parglmVS_benchmark/` folder. *The datasets used are `X_DATA="../datasets/tests_datasets/X_test.csv"` and `F_DATA="../datasets/tests_datasets/F_test.csv"`*.
+
+<p align="center">
+  <img src="./tests/parglmVS_benchmark/benchmark_comparison_all.png" alt="Comparison plot" width="48%"/>
+  <img src="./tests/parglmVS_benchmark/benchmark_comparison_logscale.png" alt="Log-scale comparison plot" width="48%"/>
+</p>
+
+<p align="center"><i>
+Comparison of execution times between R and Octave for the <code>parglmVS</code> function. The left plot shows the raw execution times across different models and number of permutations, while the right plot displays the same results using a log-log scale for better visualization of performance differences at large scales.
+</i></p>
+
+<p align="center">
+  <img src="./tests/parglmVS_benchmark/benchmark_linear.png" alt="Linear model benchmark" width="32%"/>
+  <img src="./tests/parglmVS_benchmark/benchmark_interaction.png" alt="Interaction model benchmark" width="32%"/>
+  <img src="./tests/parglmVS_benchmark/benchmark_full.png" alt="Full model benchmark" width="32%"/>
+</p>
+
+<p align="center"><i>
+Execution time comparisons for the <code>parglmVS</code> function between R and Octave, separated by model type. Each plot shows how performance varies with the number of permutations for the linear, interaction, and full models, respectively.
+</i></p>
+
+<p align="center">
+  <img src="./tests/parglmVS_benchmark/benchmark_models_by_permutations.png" alt="Bar chart by model and permutations" width="75%"/>
+</p>
+
+<p align="center"><i>
+Bar chart summarizing the execution times of the <code>parglmVS</code> function across different models and permutation counts, grouped by language (R vs. Octave). This visualization helps highlight relative performance differences depending on model complexity and computational load.
+</i></p>
+
+As observed in the benchmark plots, the R implementation significantly outperforms the Octave version when computing the test structures for permutation testing across all three model types. This performance gap becomes increasingly pronounced as the number of permutations grows, highlighting the efficiency of the R-based approach in handling larger computational loads.
+
+### 8.2. `vasca` Performance
+
+The script `tests/vasca_benchmark.sh` automates the benchmarking process for the `vasca` function in both R and MATLAB/Octave. It evaluates performance across multiple datasets and two significance levels (`0.01` and `0.05`), measuring execution times for each configuration. The results are compiled into a CSV file and visualized through a variety of comparative plots, automatically generated with R and saved in the `vasca_benchmark/` directory. *The datasets used for this benchmark are four `.json` files located under `../datasets/tests_datasets/`, named `parglmVS_1.json` to `parglmVS_4.json`.*
+
+<p align="center">
+  <img src="./tests/vasca_benchmark/vasca_language_comparison.png" width="49%">
+  <img src="./tests/vasca_benchmark/vasca_heatmap.png" width="49%">
+</p>
+
+<p align="center">
+  <em>The first image compares the execution time of the <code>vasca</code> function between R and Octave across different datasets and significance levels. Each point represents an individual execution time, with lines connecting the results for each language. The second image shows a heatmap visualizing the execution times of the <code>vasca</code> function, categorized by language and dataset, at various significance levels.</em>
+</p>
+
+<p align="center">
+  <img src="./tests/vasca_benchmark/vasca_comparison_all.png" width="75%">
+</p>
+
+<p align="center">
+  <em>Comparison of the execution time of the <code>vasca</code> function in R and Octave across four datasets, with bars grouped by significance level (0.01 and 0.05).</em>
+</p>
+
+Although the performance of Octave/MATLAB is better in this case, the `vasca` function requires significantly less computational time compared to `parglmVS`. The performance differences between Octave and R are not as pronounced in this case, but when considering the entire pipeline, R will offer better overall performance. This is because the `parglmVS` function, which is the most computationally intensive part of the pipeline, is much more optimized in R, resulting in a faster overall execution when running the entire workflow in R.
+
+
