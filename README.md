@@ -51,6 +51,7 @@ Alternatively, you can consult my Bachelor's Thesis report, which provides a mor
 ├── matlab/                # MATLAB/Octave implementation of VASCA pipeline
 ├── R/                     # R implementation of VASCA pipeline
 ├── tests/                 # Go-based test suite comparing Octave and R results
+├── examples/              # Execution Examples with differents datasets
 ├── Dockerfile             # Docker environment to run both R and Octave code
 ├── requirements.txt       # R dependencies for scripts and tests
 ├── LICENSE
@@ -282,6 +283,8 @@ for (i in seq_len(vascao$nFactors)) {
   }
 }
 ```
+
+Also, you can take a look to `examples/` folder, where you can find 3 differents analysis above 3 differents datasets,
 
 ## 8. 📈 Performance Comparison
 
